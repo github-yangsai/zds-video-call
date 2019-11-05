@@ -16,6 +16,7 @@ Vue.use(ViewUI);
 Vue.use(AgoraRTC);
 
 Vue.config.productionTip = false;
+Vue.prototype.$axios = axios; // 将api挂载到vue的原型上
 Vue.prototype.$api = api;
 
 /* eslint-disable no-new */

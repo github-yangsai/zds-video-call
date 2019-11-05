@@ -9,9 +9,6 @@ import store from '../../store/index';
 import utils from './utils.js';
 import "view-design/dist/styles/iview.css";
 
-//  debugger
-//  console.log(iView)
-
 /**
  * 提示函数
  * 禁止点击蒙层、显示一秒后关闭
@@ -45,7 +42,7 @@ const errorHandle = (status, other) => {
             if (utils.cookies.getItem('token')) {
                 tip('登录过期，请重新登录');
                 utils.cookies.setItem('token', '');
-                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
             } else {
                 tip('请登录');
             }
@@ -71,6 +68,9 @@ const errorHandle = (status, other) => {
 
 // 创建axios实例
 var instance = axios.create({ timeout: 1000 * 12 });
+console.log(axios);
+console.log(instance);
+debugger
 // 设置post请求头
 instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 /**
@@ -83,39 +83,10 @@ instance.interceptors.request.use(
         // 但是即使token存在，也有可能token是过期的，所以在每次的请求头中携带token
         // 后台根据携带的token判断用户的登录情况，并返回给我们对应的状态码
         // 而后我们可以在响应拦截器中，根据状态码进行一些统一的操作。
-        let exp = store.state.loginInfo.exp;
-        let refresh = store.state.loginInfo.refresh;
-        if (config.url.indexOf("/warehouse/token/refresh/") == -1 && refresh) {
-            let currentTime = new Date().getTime();
-            if (currentTime > exp) {
-                //当前时间大于登录失效时间 请求refresh刷新token
-                return axios.post(`/warehouse/token/refresh/`, { refresh: refresh }).then((res) => {
-                    if (res.data) {
-                        let data = res.data;
-                        let loginInfo = {
-                            exp: data.exp,
-                            refresh: refresh
-                        }
-                        store.commit("updateLoginInfo", loginInfo);
-                        utils.cookies.setItem("token", data.access);
-                        localStorage.setItem("token", data.access);
-                    }
-                    const token = 'Bearer ' + utils.cookies.getItem('token');
-                    token && (config.headers.Authorization = token);
-                    return config;
-                }).catch(() => {
-                    toLogin();
-                })
-            } else {
-                const token = 'Bearer ' + utils.cookies.getItem('token');
-                token && (config.headers.Authorization = token);
-                return config;
-            }
-        } else {
-            const token = 'Bearer ' + utils.cookies.getItem('token');
-            token && (config.headers.Authorization = token);
-            return config;
-        }
+
+        const token = 'Bearer ' + sessionStorage.getItem('token');
+        token && (config.headers.Authorization = token);
+        return config;
     },
     error => Promise.error(error))
 
@@ -128,7 +99,7 @@ instance.interceptors.response.use(
         const { response } = error;
         if (response) {
             // 请求已发出，但是不在2xx的范围
-            store.commit('changeLoading', false);
+            // store.commit('changeLoading', false);
             errorHandle(response.status, response.data.detail);
             return Promise.reject(response);
         } else {

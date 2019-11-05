@@ -108,17 +108,18 @@ export default {
   props: ["id"],
   computed:{
     video(){
-      return this.$store.state.videoBody['data'+ this.id].video;
+      let data =  this.$store.state.videoBody.data.filter(item=>{
+        return item.id==this.id;
+      })
+      return data[0].video;
     },
     muteFlag(){
-      console.log(this.video.muteFlag)
       return this.video.muteFlag;
     }
   },
   mounted() {
     this.rtc = this.video.rtc;
     this.option = this.video.option;
-    console.log(this.option)
     let resolutions = this.resolutions;
     this.getDevices(function(devices) {
       devices.audios.forEach(function(audio) {
@@ -150,27 +151,27 @@ export default {
     },
     ctrolAudio() {
       let rtc = this.rtc;
+      let _this = this;
       if (rtc.published) {
         rtc.client.unpublish(rtc.localStream, function(err) {
-          this.$Message.error("取消发布失败");
+          _this.$Message.error("取消发布失败");
           return false;
         });
         rtc.published = false;
-        this.$store.commit("setVideoData",{id:this.id,muteFlag:true});
+        _this.$store.commit("setVideoData",{id:_this.id,muteFlag:true});
       } else {
         rtc.client.publish(rtc.localStream, function(err) {
-          this.$Message.error("发布失败");
+          _this.$Message.error("发布失败");
           return false;
         });
         rtc.published = true;
-        this.$store.commit("setVideoData",{id:this.id,muteFlag:false});
+        _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
       }
     },
 
     switchScreen(type) {
       //切换大小屏
       this.$store.commit("setCurrentVideo", this.id);
-      debugger
       if (type == "large") {
         if (this.largeScreen) {
           this.$Message.info("当前已经是大屏");
@@ -338,7 +339,6 @@ export default {
           rtc.localStream.close();
           // 关闭云代理服务
           _this.stopProxyServer(rtc.client);
-          debugger
           while (rtc.remoteStreams.length > 0) {
             var stream = rtc.remoteStreams.shift();
             var id = stream.getId();

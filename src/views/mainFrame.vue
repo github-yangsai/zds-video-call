@@ -26,15 +26,10 @@ export default {
   computed: {
     currentVideo() {
       return this.$store.state.videoBody.currentVideo;
-    },
-    data1(){
-      return this.$store.state.videoBody.data1;
-    },
-    data2(){
-      return this.$store.state.videoBody.data2;
     }
   },
   methods:{
+    
   }
 };
 </script>

@@ -1,15 +1,15 @@
 /**
-  * 仓库管理模块接口列表
-  */
+ * 仓库管理模块接口列表
+ */
 
 import base from './base'; // 导入接口域名列表
 import axios from '@/common/utils/http.js'; // 导入http中创建的axios实例
 //  import qs from 'qs'; // 根据需求是否导入qs模块
 
-const wareHouse = {
-    // 查询NVR
-    queryNvr() {
-        return axios.get(`${base.nvrs}/`);
+const photo = {
+    // 查询图片分类
+    queryPhotoCategory() {
+        return axios.get(`${base.photoCategory}/`);
     },
     //查询单个摄像头
     queryCamera(id) {
@@ -52,7 +52,7 @@ const wareHouse = {
         return axios.post(`${base.restart}/`);
     },
     nvrConfig(params) {
-        return axios.get(`${base.nvr_config}/`, params, { responseType:'blob' });
+        return axios.get(`${base.nvr_config}/`, params, { responseType: 'blob' });
     },
     nvrConfigFile(params) {
         return axios({
@@ -83,4 +83,4 @@ const wareHouse = {
     //  }
 }
 
-export default wareHouse;
+export default photo;

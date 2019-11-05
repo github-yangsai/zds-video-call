@@ -2,8 +2,9 @@
     <div class="pictures_box clearfix">
       <div class="pictures_type">
         <ul>
-          <li>现场记录(10)</li>
-          <li>现场记录(10)</li>
+          <li v-for="(item,index) in categoryList" :key="index">
+            {{item.name}}
+          </li>
         </ul>
         </div>
         
@@ -26,7 +27,24 @@ export default {
   name: 'picturesShow',
   data () {
     return {
-      
+      categoryList:[]
+    }
+  },
+  computed:{
+    // categoryList(){
+    //   // return this.$store.state.videoBody['data'+ this.id].photosCategory
+    // }
+  },
+  mounted(){
+    this.queryPhoto();
+  },
+  methods:{
+    queryPhoto(){
+      //查询图片分类
+      // this.$api.photo.queryPhotoCategory().then(res =>{
+      //   // this.$store.commit("setPhotosCategory",res.data);
+      //   this.categoryList = res.data;
+      // })
     }
   }
 }
@@ -37,6 +55,7 @@ export default {
   float: left;
   height:calc(50vh - 50px);
   background: #E4EFF9;
+  overflow-y:auto;
 }
 .pictures_type li{
   height: 42px;
