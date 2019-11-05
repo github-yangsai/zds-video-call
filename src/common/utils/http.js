@@ -68,9 +68,6 @@ const errorHandle = (status, other) => {
 
 // 创建axios实例
 var instance = axios.create({ timeout: 1000 * 12 });
-console.log(axios);
-console.log(instance);
-debugger
 // 设置post请求头
 instance.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 /**

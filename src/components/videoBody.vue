@@ -67,6 +67,7 @@ export default {
   name: "videoBody",
   data() {
     return {
+      muteFlag:false,
       largeScreen:false,
       isCalling:true,
       rtc: {
@@ -112,9 +113,6 @@ export default {
         return item.id==this.id;
       })
       return data[0].video;
-    },
-    muteFlag(){
-      return this.video.muteFlag;
     }
   },
   mounted() {
@@ -158,14 +156,16 @@ export default {
           return false;
         });
         rtc.published = false;
-        _this.$store.commit("setVideoData",{id:_this.id,muteFlag:true});
+        // _this.$store.commit("setVideoData",{id:_this.id,muteFlag:true});
+        _this.muteFlag = true;
       } else {
         rtc.client.publish(rtc.localStream, function(err) {
           _this.$Message.error("发布失败");
           return false;
         });
         rtc.published = true;
-        _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+        // _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+        _this.muteFlag = false;
       }
     },
 
@@ -351,7 +351,8 @@ export default {
           console.log("客户离开房间成功");
           rtc.published = false;
           _this.rtc.joined = false;
-          _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+          // _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+          _this.muteFlag = false;
           _this.$Message.success("挂断成功");
           _this.largeScreen = false;
           _this.isCalling = false;
