@@ -15,12 +15,12 @@
             <video-body :id="id"></video-body>
           </Col>
           <Col span="9">
-            <pictures-show></pictures-show>
+            <pictures-show @openImageModal="openImageModal"></pictures-show>
           </Col>
         </Row>
       </Col>
       <Col span="13" class="r_main">
-      <!-- <image-modal></image-modal> -->
+      <image-modal :data="largeImg" v-if="imageModalFlag"></image-modal>
         <Row>
           <Col span="10">
             <!-- <chat-body :data="data.chat" :chatId="data.id"></chat-body> -->
@@ -61,8 +61,16 @@ export default {
   props:['id'],
   data() {
     return {
-      
+      imageModalFlag:false,
+      largeImg:{attachmentPath:""},
     };
+  },
+  methods:{
+    openImageModal(item){
+      
+      this.imageModalFlag = true;
+      this.largeImg = item;
+    }
   }
   
 };
@@ -102,5 +110,7 @@ export default {
 }
 .r_main{
   position: relative;
+  height: calc(50vh - 50px);
+  overflow: hidden;
 }
 </style>

@@ -54,4 +54,15 @@ li {
   width: 100%;
   height: 100%;
 }
+
+.ocr_modal .ivu-modal-body{
+  padding:16px 30px 0!important;
+}
+.ocr_modal .ivu-modal-footer{
+  padding:0;
+  border:none;
+}
+.ocr_modal .ivu-form-item{
+  margin-bottom: 20px;
+}
 </style>

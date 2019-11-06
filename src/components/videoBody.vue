@@ -140,7 +140,7 @@ export default {
       });
       // M.AutoInit();
     });
-    this.join();
+    // this.join();
   },
   methods: {
     takePicture(){

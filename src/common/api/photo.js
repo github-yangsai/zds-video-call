@@ -11,37 +11,21 @@ const photo = {
     queryPhotoCategory() {
         return axios.get(`${base.photoCategory}/`);
     },
-    //查询单个摄像头
-    queryCamera(id) {
-        return axios.get(`${base.camera}/${id}/`);
+    //根据案件号查询所有照片
+    queryPhotos(caseId) {
+        return axios.get(`${base.photos}/${caseId}/`);
     },
-    //修改NVR
-    reviewNvr(id, params) {
-        return axios.put(`${base.nvr}/${id}/`, params);
+    //删除照片
+    delPhoto(id) {
+        return axios.delete(`${base.photo}/${id}/`);
     },
-    //修改摄像头
-    reviewCamera(id, params) {
-        return axios.put(`${base.camera}/${id}/`, params);
+    //ocr识别单证
+    ocrCard(socketName, params) {
+        return axios.post(`${base.ocrCard}/${socketName}`, params);
     },
-    //删除NVR
-    delNvr(id) {
-        return axios.delete(`${base.nvr}/${id}/`);
-    },
-    //删除摄像头
-    delCamera(id) {
-        return axios.delete(`${base.camera}/${id}/`);
-    },
-    //新增NVR
-    addNvr(params) {
-        return axios.post(`${base.nvrs}/`, params);
-    },
-    //新增摄像头
-    addCamera(params) {
-        return axios.post(`${base.cameras}/`, params);
-    },
-    //截屏
-    capture(params) {
-        return axios.post(`${base.capture}/`, params);
+    //保存OCR结果到信息录入
+    saveOcrResult(caseId, type, params) {
+        return axios.put(`${base.putCredentials}/${caseId}/${type}`, params);
     },
 
     //新增摄像头时端口和通道默认值
