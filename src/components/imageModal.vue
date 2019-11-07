@@ -4,6 +4,9 @@
       <img :src="data.attachmentPath" />
       <a href="javascript:void(0)" class="del_btn" @click="delPicture(data.id)">删除</a>
       <a href="javascript:void(0)" class="download_btn" @click="downPicture(data)">下载</a>
+       <a href="javascript:void(0)" class="close_btn" @click="closeModal">
+         <Icon type="md-close" />
+       </a>
       <div class="ocr_btn">
         <ocr-body :data="data"></ocr-body>
       </div>
@@ -23,6 +26,9 @@ export default {
   },
   computed: {},
   methods: {
+    closeModal(){
+      this.$emit("close");
+    },
     delPicture(id) {
       this.$Modal.confirm({
         title: "你确定要删除照片吗?",
@@ -110,6 +116,12 @@ export default {
 .download_btn {
   background: #419cef;
   right: 10px;
+}
+.image_box a.close_btn{
+  background: #424242;
+  border-radius: 0;
+  right:-36px;
+  font-size:16px;
 }
 .image_box a:hover {
   opacity: 0.7;

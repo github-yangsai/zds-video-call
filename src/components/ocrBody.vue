@@ -6,13 +6,13 @@
       <a href="javascript:void(0)" @click="toOcr($event,1)">身份证</a>
       <a href="javascript:void(0)" @click="toOcr($event,4)">银行卡</a>
     </div>
-    <Modal v-model="ocrFlag" width="850" class-name="ocr_modal">
+    <Modal v-model="ocrFlag" width="850" class-name="ocr_modal" :loading="isOkloading">
       <p slot="header">{{ocrType}}识别结果</p>
       <div class="result_content">
         <div class="check_img" v-if="data.attachmentPath">
           <img :src="data.attachmentPath" />
         </div>
-        <Form ref="checkResult" :model="modelData" :rules="ruleValidate" :label-width="120" :loading="isOkloading">
+        <Form ref="checkResult" :model="modelData" :rules="ruleValidate" :label-width="120">
           <!--身份证识别结果-->
           <div class="discern_result" v-if="ocrId==1">
             <Row>

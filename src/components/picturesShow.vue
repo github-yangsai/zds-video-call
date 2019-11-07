@@ -7,6 +7,7 @@
           :key="index"
           @click="picturesTab(item,index)"
           :class="{'current':item.selected,'show':item.isShow,'level2':item.parentId != 0}"
+          @drop="drop(item,$event)"
         >
           {{item.name}} ({{getCount(item)}})
           <Icon type="ios-arrow-forward" v-if="item.id!=5 && item.children && !item.isExpend" />
@@ -15,9 +16,15 @@
       </ul>
     </div>
 
-    <div class="pictures_list">
+    <div class="pictures_list" :id="'pictures_list'+id">
       <ul>
-        <li v-for="(item,index) in currentPhotoList" :key="index" @dblclick="viewLarge(item)">
+        <li
+          v-for="(item,index) in currentPhotoList"
+          :key="index"
+          @dblclick="viewLarge(item)"
+          draggable="true"
+          @dragstart="dragStart(index,$event)"
+        >
           <img :src="item.attachmentPath" />
         </li>
       </ul>
@@ -27,9 +34,13 @@
 <script>
 export default {
   name: "picturesShow",
+  props:["id"],
   data() {
     return {
+      test:new Date(),
       categoryList: [],
+      dragItem: null,
+      dragIdx:0,
       selectedId: 1,
       currentPhotoList: [],
       photoList: [
@@ -354,13 +365,62 @@ export default {
   },
   computed: {},
   mounted() {
+    document.addEventListener("dragover",function(e){
+      e.preventDefault();
+    })
     this.queryPhotoCategory();
     this.queryPhotos();
+
+//     setInterval(() => {
+//       this.currentPhotoList.push({
+// 	"id": 1,
+// 	"caseId": "5d6cb15be5043000014250d7",
+// 	"categoryId": 1,
+// 	"fileName": "(null)",
+// 	"description": null,
+// 	"attachmentPath": "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1571647121204&di=1771bf0959bec75b23f0b136dca1c185&imgtype=0&src=http%3A%2F%2Fpic34.nipic.com%2F20131030%2F2455348_194508648000_2.jpg",
+// 	"uploadFlag": 0,
+// 	"createdOn": "2019-09-02T07:50:50.346084Z",
+// 	"createdBy": "579570680a506e1320bd2a43"
+// });
+//  let historyDiv = document.getElementById("pictures_list"+this.id);
+//       let scrollHeight = historyDiv.scrollHeight;
+//       this.$nextTick(() => {
+//       document.getElementById("pictures_list"+this.id).scrollTo({top:scrollHeight});
+//        })
+//     }, 5000);
+    
+  },
+  watch:{
+    currentPhotoList(){
+      
+    }
   },
   methods: {
-    viewLarge(item){
+    drop(target) {
+      if (target.children) {
+        this.$Message.warning("不能拖放至一级菜单");
+        return false;
+      }
+      let data = [{ id: this.dragItem.id, categoryId: target.id }];
+     
+      this.$api.photo.updatePhoto(data).then(res => {
+        console.log(res);
+         this.dragItem.categoryId = target.id;
+       this.currentPhotoList.splice(this.dragIdx,1);
+       this.dragIdx = 0;
+         this.$Message.success(`图片已成功移动至${target.name}！`);
+      }).catch(e=>{
+         this.$Message.error(e);
+      });
+    },
+    dragStart(index, e) {
+      this.dragItem = this.currentPhotoList[index];
+      this.dragIdx = index;
+    },
+    viewLarge(item) {
       //查看大图
-      this.$emit("openImageModal",item);
+      this.$emit("openImageModal", item);
     },
     picturesTab(item, index) {
       if (item.id == 5) {
@@ -436,7 +496,6 @@ export default {
     queryPhotoCategory() {
       //查询图片分类
       this.$api.photo.queryPhotoCategory().then(res => {
-        // this.$store.commit("setPhotosCategory",res.data);
         this.categoryList = res.data;
         this.initCategoryList();
       });
@@ -450,7 +509,7 @@ export default {
 </script>
 <style scoped>
 .pictures_type {
-  width: 40%;
+  width: 50%;
   float: left;
   height: calc(50vh - 50px);
   background: #e4eff9;
@@ -488,7 +547,7 @@ export default {
   background: #d0e7ff;
 }
 .pictures_list {
-  width: 60%;
+  width:50%;
   padding: 10px;
   background: #ced0db;
   height: calc(50vh - 50px);

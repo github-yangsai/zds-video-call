@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import mainFrame from '@/views/mainFrame'
+import index from '@/views/mainFrame'
 import caseDetail from '@/views/caseDetail'
 import lossOrder from '@/views/lossOrder'
 import userInfo from '@/views/userInfo'
@@ -11,8 +11,8 @@ export default new Router({
     mode: 'history',
     routes: [{
         path: '/',
-        name: 'mainFrame',
-        component: mainFrame,
+        name: 'index',
+        component: index,
         children: [{
                 path: '/caseDetail',
                 name: 'caseDetail',

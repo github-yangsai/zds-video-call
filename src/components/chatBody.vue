@@ -1,6 +1,6 @@
 <template>
     <div class="chat_box">
-        <div class="chat_history" :id="'chat_history'+ chatId">
+        <div class="chat_history" :id="'chat_history'+ id">
             <ul>
               <li :class="{'client':item.role=='client'}" v-for="(item,index) in list" :key="index">
                 <span v-if="item.role=='client'">客户：{{item.msg}}</span>
@@ -9,11 +9,22 @@
             </ul>
         </div>
         <div class="chat_bar">
-          <input type="text" v-model.trim="sendCon" />
-          <a href="javascript:void(0)" class="send_btn" @click="sendMsg">发送</a>
+          <Row>
+            <Col span="14">
+            <Input v-model="sendCon" clearable @on-keyup="enterSend" />
+                <!-- <input type="text" v-model.trim="sendCon" @keyup="enterSend" /> -->
+            </Col>
+            <Col span="10">
+                <a href="javascript:void(0)" class="send_btn" @click="sendMsg">发送</a>
           <a href="javascript:void(0)" class="guide_btn">引导图
             <Icon type="ios-arrow-up" />
           </a>
+            </Col>
+          </Row>
+
+         
+          
+         
         </div>
     </div>
 </template>
@@ -28,13 +39,27 @@ export default {
       // ]
     }
   },
-  props:["data","chatId"],
+  props:["id"],
   computed:{
     list(){
-      return this.data;
+       let data =  this.$store.state.videoBody.data.filter(item=>{
+        return item.id==this.id;
+      })
+      if (data[0]) {
+        return data[0].chat;
+      } else {
+        return {};
+      }
     }
   },
+  mounted(){
+  },
   methods:{
+    enterSend(e){
+      if(e.keyCode == 13){
+        this.sendMsg();
+      }
+    },
     sendMsg(){
       if(!this.sendCon){
         return false;
@@ -44,12 +69,17 @@ export default {
       this.setScrollTop();
     },
     setScrollTop(){
-      let historyDiv = document.getElementById("chat_history"+this.chatId);
-      historyDiv.scrollTo({top:historyDiv.scrollHeight});
+      let historyDiv = document.getElementById("chat_history"+this.id);
+      let scrollHeight = historyDiv.scrollHeight;
+      this.$nextTick(() => {
+        historyDiv.scrollTo({top:scrollHeight});
+      })
+      
     }
   }
 }
 </script>
+
 <style scoped>
 .chat_box{
   border-right:1px #D2D2D2 solid;
@@ -76,16 +106,17 @@ export default {
   position: relative;
 }
 .chat_bar input{
-  position: absolute;
-  top:0;
+  /* position: absolute;
+  top:0; */
   height:30px;
   line-height: 30px;
   border:none;
   display:block;
-  right:200px;
+  /* right:200px; */
   left:0;
-  padding:0 170px 0 10px;
+  padding:0 0 0 10px;
   outline: none;
+  width:100%;
 
 }
 .chat_bar a{
@@ -96,7 +127,7 @@ export default {
   line-height: 30px;
   text-align: center;
   color:#fff;
-  padding:0 20px;
+  padding:0 6%;
   background: #419CEF;
 }
 .chat_bar a.guide_btn{
@@ -109,9 +140,19 @@ export default {
   top:8px;
 }
 .send_btn{
-  right:90px;
+  right:80px;
 }
 .chat_bar a:hover{
   background: #298de8;
+}
+</style>
+<style>
+.chat_bar .ivu-input{
+  border:0;
+  padding:0 10px;
+  height:30px;
+  line-height:30px;
+  outline:none;
+  
 }
 </style>

@@ -3,11 +3,12 @@
  */
 const domain = "";
 const base = {
-    photoCategory: `${domain}/api/evi-category`,
-    photos: `${domain}/api/file`,
-    photo: `${domain}/api/v2/photo`,
-    ocrCard: `${domain}/api/v2/ocr`,
-    putCredentials: `${domain}/api/credentials`
+    photoCategory: `/api/evi-category`,
+    photos: `/api/file`,
+    photo: `/api/v2/photo`,
+    ocrCard: `/api/v2/ocr`,
+    putCredentials: `/api/credentials`,
+    updatePhoto: `/api/v2/photo-category`
 }
 
 export default base;

@@ -27,6 +27,10 @@ const photo = {
     saveOcrResult(caseId, type, params) {
         return axios.put(`${base.putCredentials}/${caseId}/${type}`, params);
     },
+    //更新图片分类
+    updatePhoto(params) {
+        return axios.put(`${base.updatePhoto}/`, params);
+    },
 
     //新增摄像头时端口和通道默认值
     cameraSuggest(id) {

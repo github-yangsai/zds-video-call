@@ -67,9 +67,9 @@ export default {
   name: "videoBody",
   data() {
     return {
-      muteFlag:false,
-      largeScreen:false,
-      isCalling:true,
+      muteFlag: false,
+      largeScreen: false,
+      isCalling: true,
       rtc: {
         client: null,
         joined: false,
@@ -107,12 +107,16 @@ export default {
     };
   },
   props: ["id"],
-  computed:{
-    video(){
-      let data =  this.$store.state.videoBody.data.filter(item=>{
-        return item.id==this.id;
-      })
-      return data[0].video;
+  computed: {
+    video() {
+      let data = this.$store.state.videoBody.data.filter(item => {
+        return item.id == this.id;
+      });
+      if (data[0]) {
+        return data[0].video;
+      } else {
+        return {};
+      }
     }
   },
   mounted() {
@@ -143,9 +147,8 @@ export default {
     // this.join();
   },
   methods: {
-    takePicture(){
+    takePicture() {
       //截图
-      
     },
     ctrolAudio() {
       let rtc = this.rtc;

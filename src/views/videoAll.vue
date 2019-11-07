@@ -1,7 +1,7 @@
 <template>
   <div class="video_all">
     <div class="case_desc">
-      <span>案发号：</span>
+      <span>案件号：</span>
       <span>车牌号：</span>
       <span>车架号：</span>
       <span>出险时间：</span>
@@ -15,17 +15,17 @@
             <video-body :id="id"></video-body>
           </Col>
           <Col span="9">
-            <pictures-show @openImageModal="openImageModal"></pictures-show>
+            <pictures-show :id="id" @openImageModal="openImageModal"></pictures-show>
           </Col>
         </Row>
       </Col>
       <Col span="13" class="r_main">
-      <image-modal :data="largeImg" v-if="imageModalFlag"></image-modal>
+      <image-modal :data="largeImg" @close="closeImageModal" v-if="imageModalFlag"></image-modal>
         <Row>
-          <Col span="10">
-            <!-- <chat-body :data="data.chat" :chatId="data.id"></chat-body> -->
+          <Col span="7">
+            <chat-body :id="id"></chat-body>
           </Col>
-          <Col span="14">
+          <Col span="17">
             <div class="relative_router">
               <router-view></router-view>
             </div>
@@ -67,9 +67,11 @@ export default {
   },
   methods:{
     openImageModal(item){
-      
       this.imageModalFlag = true;
       this.largeImg = item;
+    },
+    closeImageModal(){
+      this.imageModalFlag = false;
     }
   }
   
@@ -78,6 +80,7 @@ export default {
 <style scoped>
 .video_all{
   position: relative;
+  border-bottom:1px #d2d2d2 solid;
 }
 .sidebtn_box{
   position: absolute;
