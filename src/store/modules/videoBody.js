@@ -3,7 +3,9 @@ import { stat } from "fs";
 const videoBody = {
     state: {
         currentVideo: 1,
-        data: []
+        data: [],
+        signalr: null,
+        signalrStatus: 0
     },
     mutations: {
         setCurrentVideo(state, val) {
@@ -25,6 +27,12 @@ const videoBody = {
         },
         setData(state, data) {
             state.data.push(data);
+        },
+        setSignalr(state, data) {
+            state.signalr = data;
+        },
+        setSignalrStatus(state, data) {
+            state.signalrStatus = data;
         }
 
     },

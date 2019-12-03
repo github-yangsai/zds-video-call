@@ -502,7 +502,19 @@ export default {
     },
     queryPhotos() {
       //查询所有图片
-      this.currentPhotoList = this.filterPhotos(this.selectedId);
+      this.$api.photo.queryPhotos(this.id).then(res => {
+        if(res.data){
+           res.data.forEach((item,index)=>{
+            item.attachmentPath = this.getFileUrl() + item.attachmentPath;
+          })
+          this.photoList = res.data;
+          this.currentPhotoList = this.filterPhotos(this.selectedId);
+        }
+      });
+      
+    },
+    getFileUrl(){
+      return location.protocol + "//" + location.host;
     }
   }
 };

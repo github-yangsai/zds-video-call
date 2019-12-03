@@ -10,6 +10,7 @@ import store from './store';
 import api from '@/common/api/index.js'
 import utils from "./common/utils/utils.js";
 import AgoraRTC from 'agora-rtc-sdk';
+import 'signalr';
 
 
 Vue.use(ViewUI);
@@ -18,6 +19,7 @@ Vue.use(AgoraRTC);
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios; // 将api挂载到vue的原型上
 Vue.prototype.$api = api;
+// Vue.prototype.signalr = signalr;
 
 /* eslint-disable no-new */
 new Vue({

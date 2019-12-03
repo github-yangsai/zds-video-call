@@ -16,6 +16,12 @@ module.exports = {
                 changeOrigin: true,
                 // secure: false,  // 如果是https接口，需要配置这个参数
             },
+            '/RemoteFunctionHub': {
+                target: 'ws://192.168.16.90:8001',
+                changeOrigin: true,
+                ws: true,
+                secure: false, // 如果是https接口，需要配置这个参数
+            },
         },
 
         // Various Dev Server settings

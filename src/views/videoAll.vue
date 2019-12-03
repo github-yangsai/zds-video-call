@@ -26,8 +26,10 @@
             <chat-body :id="id"></chat-body>
           </Col>
           <Col span="17">
-            <div class="relative_router">
-              <router-view></router-view>
+            <div class="info_content">
+              <case-detail v-if="tabType==1" :id="id" :ref="'detail'+id"></case-detail>
+              <loss-order v-if="tabType==2" :id="id" :ref="'order'+id">></loss-order>
+              <user-info v-if="tabType==3" :id="id" :ref="'userinfo'+id">></user-info>
             </div>
           </Col>
         </Row>
@@ -35,12 +37,12 @@
     </Row>
 
     <div class="sidebtn_box">
-      <router-link to="/caseDetail">工单详情</router-link>
+      <!-- <router-link to="/caseDetail">工单详情</router-link>
       <router-link to="/lossOrder">电子定损单</router-link>
-      <router-link to="/userInfo">用户信息</router-link>
-      <!-- <a href="./caseDetail">工单详情</a>
-      <a href="./lossOrder">电子定损单</a>
-      <a href="./userInfo">用户信息</a> -->
+      <router-link to="/userInfo">用户信息</router-link> -->
+      <a href="javascript:void(0)" :class="{'current':tabType==1}" @click="queryCaseDetail">工单详情</a>
+      <a href="javascript:void(0)" :class="{'current':tabType==2}" @click="queryOrder">电子定损单</a>
+      <a href="javascript:void(0)" :class="{'current':tabType==3}" @click="tabType=3">用户信息</a>
       
     </div>
   </div>
@@ -50,20 +52,30 @@ import videoBody from "@/components/videoBody";
 import picturesShow from "@/components/picturesShow";
 import chatBody from "@/components/chatBody";
 import imageModal from "@/components/imageModal";
+import caseDetail from "@/components/caseDetail";
+import lossOrder from "@/components/lossOrder";
+import userInfo from "@/components/userInfo";
 export default {
   name: "videoAll",
   components: {
     videoBody,
     picturesShow,
     chatBody,
-    imageModal
+    imageModal,
+    caseDetail,
+    lossOrder,
+    userInfo
   },
   props:['id'],
   data() {
     return {
       imageModalFlag:false,
       largeImg:{attachmentPath:""},
+      tabType:1
     };
+  },
+  mounted(){
+    this.$refs[`detail${this.id}`].query();
   },
   methods:{
     openImageModal(item){
@@ -72,6 +84,15 @@ export default {
     },
     closeImageModal(){
       this.imageModalFlag = false;
+    },
+    queryCaseDetail(){
+      this.tabType = 1;
+      this.$next(()=>{
+         this.$refs[`detail${this.id}`].query();
+      })
+    },
+    queryOrder(){
+      this.tabType = 2;
     }
   }
   
@@ -108,12 +129,15 @@ export default {
   background: #72B8F8;
   margin-bottom: 5px;
 }
-.sidebtn_box a:hover{
+.sidebtn_box a:hover,.sidebtn_box a.current{
   background: #419CEF;
 }
 .r_main{
   position: relative;
   height: calc(50vh - 50px);
   overflow: hidden;
+}
+.info_content{
+  /* height: calc(50vh - 52px); */
 }
 </style>

@@ -1,4 +1,4 @@
-const pictures = {
+const currentChat = {
     state: {
         photosCategory: [],
     },
@@ -12,4 +12,4 @@ const pictures = {
     }
 };
 
-export default pictures;
+export default currentChat;

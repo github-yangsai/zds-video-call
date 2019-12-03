@@ -3,7 +3,7 @@
     <div
       id="top_box"
       class="top_container layout_box"
-      :class="{'high':currentVideo==1}"
+      :class="{'high':currentVideo==id1}"
       v-if="videoFlag1"
     >
       <video-all :id="id1"></video-all>
@@ -11,14 +11,15 @@
     <div
       id="bottom_box"
       class="bottom_container layout_box"
-      :class="{'high':currentVideo==2}"
+      :class="{'high':currentVideo==id2}"
       v-if="videoFlag2"
     >
       <video-all :id="id2"></video-all>
     </div>
 
     <!--接听框-->
-    <Modal v-model="ringFlag" width="360">
+    <ring-answer :flag="ringFlag" @close="closeAnswer" @join="joinCall"></ring-answer>
+    <!-- <Modal v-model="ringFlag" width="360">
       <p slot="header" style="color:#f60;text-align:center">新提醒</p>
       <div>
         <p>您有视频通话接入</p>
@@ -26,38 +27,133 @@
       <div slot="footer" style="text-align:center">
         <Button type="error" @click="joinCall">立即接听</Button>
       </div>
-    </Modal>
+    </Modal>-->
   </div>
 </template>
 
 <script>
 import videoAll from "@/views/videoAll";
+import ringAnswer from "@/components/ringAnswer";
 export default {
   name: "mainFrame",
   components: {
-    videoAll
+    videoAll,
+    ringAnswer
   },
   data() {
     return {
-      ringFlag: true,
+      ringFlag: false,
       videoFlag1: false,
       videoFlag2: false,
-      id1:"",
-      id2:""
+      id1: "",
+      id2: "",
+      signalr: null
     };
   },
   mounted() {
+    this.initSignalr();
   },
   computed: {
     currentVideo() {
       return this.$store.state.videoBody.currentVideo;
     }
   },
+  watch:{
+  },
   methods: {
+    closeAnswer() {
+      this.ringFlag = false;
+    },
+    initSignalr() {
+      if (this.signalr) {
+        return;
+      }
+      let params = "";
+      const currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
+      // if (currentChat && currentChat.caseId) {  // 刷新页面，重连
+      //   params = [
+      //     `caseId=${currentChat.caseId}`,
+      //     `customerId=${currentChat.customerId}`
+      //   ].join('&');
+      //   this.$store.dispatch(ChatActions.setCurrentChat(currentChat));
+      // }
+      // this.signalr = $.hubConnection(`http://192.168.16.90:8001/RemoteFunctionHub?${params}`)
+      const signalR = require("@aspnet/signalr");
+      this.signalr = new signalR.HubConnectionBuilder()
+        .withUrl(`/RemoteFunctionHub?${params}`, {
+          accessTokenFactory: () => {
+            // 身份验证和授权
+            return sessionStorage.getItem("token");
+          }
+        })
+        .build();
+      this.startSignalr();
+
+      this.isStartingSignalr = true;
+      setTimeout(() => {
+        this.isStartingSignalr = false;
+      }, 3000);
+      this.signalr.onclose(() => {
+        if (this.isStartingSignalr) {
+          this.startSignalr();
+          return;
+        }
+        this.$store.commit("setSignalr", null);
+        this.$store.commit("setSignalrStatus", 0);
+      });
+    },
+    startSignalr() {
+      this.signalr
+        .start()
+        .catch(err => console.log("signalr err", err))
+        .then(() => {
+          console.log("----signalr is ready");
+          this.signalr.send(
+            "SendMessageToUserById",
+            "customerId",
+            "EvidenceSuggestion",
+            "message"
+          );
+          this.signalr.on("Disconnect", () => {
+            //
+            this.$Message.error("账号在其它设备登录，当前登录被踢出");
+            // if (this.isReceipting) {
+            //   this.messageService.publishCloseVideo();
+            // } else {
+            //   this.messageService.publishLogout();
+            // }
+          });
+          this.$store.commit("setSignalr", this.signalr);
+          this.$store.commit("setSignalrStatus", 1);
+          this.watchSignalr();
+        });
+    },
+    watchSignalr() {
+      //来电
+      this.signalr.on("IncomingCall", chat => {
+        console.log("来电了", chat);
+        if (!chat.videoType) {
+          chat.videoType = "Agora";
+        }
+        this.showRing(chat);
+      });
+      //对方结束通话或取消
+      this.signalr.on("CancelCall", chat => {
+        console.log("对方取消了", chat);
+        // this.closeAnswer();
+      });
+    },
+    showRing(chat) {
+      const stringChat = chat ? JSON.stringify(chat) : "";
+      sessionStorage.setItem("currentChat", stringChat);
+      this.ringFlag = true;
+    },
     joinCall() {
+      const currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
+      console.log("来电数据", currentChat);
       let randomId = Math.floor(Math.random() * 10 + 1);
       let item = {
-        id: randomId,
+        id: "",
         chat: [{ role: "client", msg: "你好，我想问下..." }],
         photosCategory: [],
         video: {
@@ -81,17 +177,25 @@ export default {
           }
         }
       };
-      this.$store.commit("setData", item);
+
       if (!this.videoFlag1) {
+        item.id = currentChat.caseId;
+        item.video.option.channel = currentChat.caseId;
+        item.video.option.uid = 2222;
+        this.$store.commit("setData", item);
         this.id1 = item.id;
         this.videoFlag1 = true;
-        setTimeout(()=>{
-          this.ringFlag = true;
-        },5000)
-        this.ringFlag = false;
+        // setTimeout(() => {
+        //   this.ringFlag = true;
+        // }, 5000);
+        // this.ringFlag = false;
         return false;
       }
       if (!this.videoFlag2) {
+        item.video.option.uid = 3333;
+        item.id = currentChat.caseId;
+        item.video.option.channel = currentChat.caseId;
+        this.$store.commit("setData", item);
         this.id2 = item.id;
         this.videoFlag2 = true;
         this.ringFlag = false;
