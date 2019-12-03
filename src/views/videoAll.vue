@@ -87,7 +87,7 @@ export default {
     },
     queryCaseDetail(){
       this.tabType = 1;
-      this.$next(()=>{
+      this.$nextTick(()=>{
          this.$refs[`detail${this.id}`].query();
       })
     },

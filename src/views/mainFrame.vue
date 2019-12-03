@@ -58,8 +58,7 @@ export default {
       return this.$store.state.videoBody.currentVideo;
     }
   },
-  watch:{
-  },
+  watch: {},
   methods: {
     closeAnswer() {
       this.ringFlag = false;
@@ -87,13 +86,16 @@ export default {
           }
         })
         .build();
-      this.startSignalr();
-
+      this.signalr.serverTimeoutInMilliseconds = 1000 * 3600 * 16; // 超时时间
+      // 处理：刚连接signalr，就收到断开消息
       this.isStartingSignalr = true;
       setTimeout(() => {
         this.isStartingSignalr = false;
       }, 3000);
+      this.startSignalr();
+
       this.signalr.onclose(() => {
+        console.log("signalr断开了...");
         if (this.isStartingSignalr) {
           this.startSignalr();
           return;
@@ -115,7 +117,6 @@ export default {
             "message"
           );
           this.signalr.on("Disconnect", () => {
-            //
             this.$Message.error("账号在其它设备登录，当前登录被踢出");
             // if (this.isReceipting) {
             //   this.messageService.publishCloseVideo();
@@ -131,6 +132,7 @@ export default {
     watchSignalr() {
       //来电
       this.signalr.on("IncomingCall", chat => {
+        debugger;
         console.log("来电了", chat);
         if (!chat.videoType) {
           chat.videoType = "Agora";
@@ -170,7 +172,7 @@ export default {
           option: {
             mode: "rtc",
             codec: "h264",
-            appID: "4f74b5716ed346c597e476932b878962",
+            appID: "15d94f5f8aa445f8873c6457bae910aa",
             channel: "12",
             uid: 2222,
             token: ""

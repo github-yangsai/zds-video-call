@@ -81,7 +81,7 @@ export default {
       option: {
         mode: "rtc",
         codec: "h264",
-        appID: "4f74b5716ed346c597e476932b878962",
+        appID: "15d94f5f8aa445f8873c6457bae910aa",
         channel: "",
         uid: 1,
         token: ""

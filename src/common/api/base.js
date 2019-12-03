@@ -9,7 +9,9 @@ const base = {
     putCredentials: `/api/credentials`,
     updatePhoto: `/api/v2/photo-category`,
     caseDetail: `/api/case`,
-    policy: `/api/policy`
+    policy: `/api/policy`,
+    login: `/api/login`,
+    getUser: `/api/users/current`
 }
 
 export default base;

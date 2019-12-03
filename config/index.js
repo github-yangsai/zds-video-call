@@ -22,6 +22,10 @@ module.exports = {
                 ws: true,
                 secure: false, // 如果是https接口，需要配置这个参数
             },
+            '/token': {
+                target: "https://wsliveroom-demo.zego.im:8282",
+                changeOrigin: true
+            }
         },
 
         // Various Dev Server settings
