@@ -11,7 +11,10 @@ const base = {
     caseDetail: `/api/case`,
     policy: `/api/policy`,
     login: `/api/login`,
-    getUser: `/api/users/current`
+    getUser: `/api/users/current`,
+    sessionConnected: `/api/session-connected`,
+    sessionUnConnected: `/api/session-unconnected`,
+    seatIn: `/api/seat-in`
 }
 
 export default base;
