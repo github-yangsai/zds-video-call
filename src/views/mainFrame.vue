@@ -142,8 +142,18 @@ export default {
       //对方结束通话或取消
       this.signalr.on("CancelCall", chat => {
         console.log("对方取消了", chat);
-        // this.closeAnswer();
+        sessionStorage.setItem("currentChat", JSON.stringify(chat));
+        this.closeAnswer();
+        let _this = this;
+        //重新入席，进入空闲状态
+        setTimeout(() => {
+          _this.seatInAsync();
+        }, 1000);
       });
+    },
+    seatInAsync() {
+      sessionStorage.setItem("isSeatIn", "true");
+      return this.$api.common.seatIn().then(res => {});
     },
     showRing(chat) {
       const stringChat = chat ? JSON.stringify(chat) : "";
@@ -152,7 +162,16 @@ export default {
     },
     joinCall() {
       const currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
-      console.log("来电数据", currentChat);
+      //向客户发送本地ID
+      const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+      const localId = currentUser.id;
+      const customerId = currentChat.customerId;
+      this.signalr.send(
+        "SendMessageToUserById",
+        customerId,
+        "InspectorId",
+        localId
+      );
       let randomId = Math.floor(Math.random() * 10 + 1);
       let item = {
         id: "",
@@ -187,10 +206,6 @@ export default {
         this.$store.commit("setData", item);
         this.id1 = item.id;
         this.videoFlag1 = true;
-        // setTimeout(() => {
-        //   this.ringFlag = true;
-        // }, 5000);
-        // this.ringFlag = false;
         return false;
       }
       if (!this.videoFlag2) {

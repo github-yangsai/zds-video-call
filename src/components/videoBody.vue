@@ -63,10 +63,18 @@
 </template>
 <script>
 import AgoraRTC from "agora-rtc-sdk";
+import _ from "lodash";
 export default {
   name: "videoBody",
   data() {
     return {
+      isFirstPingPang: true,
+      pingPang: {
+        pingInterval: null,
+        checkInterval: null,
+        pingCount: 0,
+        pangCount: 0
+      },
       muteFlag: false,
       largeScreen: false,
       isCalling: true,
@@ -117,8 +125,13 @@ export default {
       } else {
         return {};
       }
+    },
+    signalr() {
+      console.log(this.$store.state.videoBody.signalr);
+      return this.$store.state.videoBody.signalr;
     }
   },
+  created() {},
   mounted() {
     this.rtc = this.video.rtc;
     this.option = this.video.option;
@@ -145,6 +158,74 @@ export default {
       // M.AutoInit();
     });
     this.join();
+    this.notifyServerConnected();
+  },
+  watch: {
+    signalr(signalr) {
+      if (!signalr) {
+        return;
+      }
+      let _that = this;
+      // 在视频中，意外退出，又返回，不必等待'StartPing'消息, 直接开始pingpang
+      if (JSON.parse(sessionStorage.getItem("isInChannel"))) {
+        if (_that.isFirstPingPang) {
+          console.log("===start pingpang isInChannel");
+          _that.isFirstPingPang = false;
+          _that.startPingPang();
+        }
+        // 客户端已准备好，开始pingPang
+      } else if (
+        !(
+          this.signalr.methods.startping &&
+          this.signalr.methods.startping.length
+        )
+      ) {
+        this.signalr.on("StartPing", msg => {
+          console.log("===start pingpang");
+          _that.isFirstPingPang = false;
+          _that.startPingPang();
+        });
+      }
+
+      // 监听客户重连
+      if (
+        !(
+          this.signalr.methods.reconnect &&
+          this.signalr.methods.reconnect.length
+        )
+      ) {
+        this.signalr.on("Reconnect", caseId => {
+          console.log("------Reconnect:", caseId);
+          _that.isShowLeave = false; // 隐藏更改状态modal
+          if (_that.timer) {
+            clearTimeout(_that.timer);
+            _that.timer = null;
+            sessionStorage.removeItem("hangupTimer");
+          }
+        });
+      }
+
+      // 监听客户断开（消息来自app端或服务端）
+      if (
+        !(
+          this.signalr.methods.disconnectme &&
+          this.signalr.methods.disconnectme.length
+        )
+      ) {
+        this.signalr.on("DisconnectMe", () => {
+          console.log("------DisconnectMe");
+          if (_that.timer) {
+            clearTimeout(_that.timer);
+            _that.timer = null;
+            sessionStorage.removeItem("hangupTimer");
+          }
+          _that.timer = setTimeout(() => {
+            // _that.toLeave();
+          }, _that.periodTime);
+          sessionStorage.setItem("hangupTimer", new Date().getTime() + "");
+        });
+      }
+    }
   },
   methods: {
     takePicture() {
@@ -227,26 +308,6 @@ export default {
         option.appID,
         function() {
           console.log("init success");
-          /**
-           * Joins an AgoraRTC Channel
-           * This method joins an AgoraRTC channel.
-           * Parameters
-           * tokenOrKey: string | null
-           *    Low security requirements: Pass null as the parameter value.
-           *    High security requirements: Pass the string of the Token or Channel Key as the parameter value. See Use Security Keys for details.
-           *  channel: string
-           *    A string that provides a unique channel name for the Agora session. The length must be within 64 bytes. Supported character scopes:
-           *    26 lowercase English letters a-z
-           *    26 uppercase English letters A-Z
-           *    10 numbers 0-9
-           *    Space
-           *    "!", "#", "$", "%", "&", "(", ")", "+", "-", ":", ";", "<", "=", ".", ">", "?", "@", "[", "]", "^", "_", "{", "}", "|", "~", ","
-           *  uid: number | null
-           *    The user ID, an integer. Ensure this ID is unique. If you set the uid to null, the server assigns one and returns it in the onSuccess callback.
-           *   Note:
-           *      All users in the same channel should have the same type (number or string) of uid.
-           *      If you use a number as the user ID, it should be a 32-bit unsigned integer with a value ranging from 0 to (232-1).
-           **/
           rtc.client.join(
             option.token ? option.token : null,
             option.channel,
@@ -365,6 +426,39 @@ export default {
           // 关闭云代理服务
           _this.stopProxyServer(rtc.client);
         }
+      );
+      this.notifyCustomerDisconnect();
+      this.notifyServerUnconnected();
+    },
+    // 通知服务端，已连接客户
+    notifyServerConnected() {
+      let currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
+      const body = _.pick(currentChat, ["caseId", "customerId"]);
+      this.$api.common.sessionConnected(body).then(res => {});
+    },
+
+    // 通知服务端，已与客户断开
+    notifyServerUnconnected() {
+      let currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
+      const params = [
+        `caseId=${currentChat.caseId}`,
+        `customerId=${currentChat.customerId}`
+      ].join("&");
+      this.$api.common.sessionUnConnected(params).then(res => {});
+    },
+    // 通知客户断开连接
+    notifyCustomerDisconnect() {
+      debugger
+      let currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
+      if (!this.signalr) {
+        // TODO signalr尚未连接
+        return;
+      }
+      this.signalr.send(
+        "SendMessageToUserById",
+        currentChat.customerId,
+        "Disconnect",
+        ""
       );
     },
     getDevices(next) {
@@ -542,6 +636,60 @@ export default {
     stopProxyServer(client) {
       // 关闭云代理服务
       client.stopProxyServer();
+    },
+    // 开始心跳检查
+    startPingPang() {
+      let _that = this;
+      sessionStorage.setItem("isInChannel", "true");
+      _that.pingPang.pingCount = 0;
+      _that.pingPang.pangCount = 0;
+      const customerId = this.currentChat.customerId;
+      // 座席端ping
+      _that.pingPang.pingInterval = setInterval(() => {
+        const timeStr = new Date();
+        _that.pingPang.pingCount++;
+        if (this.signalr) {
+          this.signalr.send(
+            "SendMessageToUserById",
+            customerId,
+            "Ping",
+            timeStr
+          );
+        }
+      }, this.apiService.PING_INTERVAL);
+
+      // 验证接受包数量
+      _that.pingPang.checkInterval = setInterval(() => {
+        console.log(
+          "pingpang",
+          _that.pingPang.pingCount,
+          _that.pingPang.pangCount
+        );
+        _that.isBadSignal =
+          _that.pingPang.pingCount - _that.pingPang.pangCount > 1; // 4个包丢失超过1个，认为信号差
+        _that.pingPang.pingCount = 0;
+        _that.pingPang.pangCount = 0;
+      }, this.apiService.PING_INTERVAL * 4);
+
+      // 监听客户pang
+      if (!(this.signalr.methods.pang && this.signalr.methods.pang.length)) {
+        this.signalr.on("Pang", timeStr => {
+          _that.pingPang.pangCount++;
+        });
+      }
+    },
+
+    // 结束心跳检查
+    stopPingPang() {
+      let _that = this;
+      console.log("====stop pingpang");
+      _that.isBadSignal = false;
+      if (_that.pingPang.pingInterval) {
+        clearInterval(_that.pingPang.pingInterval);
+      }
+      if (_that.pingPang.checkInterval) {
+        clearInterval(_that.pingPang.checkInterval);
+      }
     }
   }
 };

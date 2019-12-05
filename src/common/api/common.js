@@ -13,7 +13,7 @@ const common = {
         return axios.post(`${base.sessionConnected}`, params);
     },
     sessionUnConnected(params) {
-        return axios.get(`${base.sessionUnConnected}/${params}`);
+        return axios.get(`${base.sessionUnConnected}?${params}`);
     },
     seatIn() {
         return axios.get(`${base.seatIn}`);
