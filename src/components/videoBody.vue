@@ -111,7 +111,8 @@ export default {
           name: "1080p",
           value: "1080p"
         }
-      ]
+      ],
+      submitStatusFlag:false
     };
   },
   props: ["id"],
@@ -296,7 +297,7 @@ export default {
       });
 
       // 开启云代理
-      rtc.client.startProxyServer();
+      // rtc.client.startProxyServer();
 
       rtc.params = option;
 
@@ -420,6 +421,9 @@ export default {
           _this.$Message.success("挂断成功");
           _this.largeScreen = false;
           _this.isCalling = false;
+          _this.notifyCustomerDisconnect();
+          _this.notifyServerUnconnected();
+          _this.closeVideo();
         },
         function(err) {
           _this.$Message.error("离开房间失败");
@@ -427,8 +431,9 @@ export default {
           _this.stopProxyServer(rtc.client);
         }
       );
-      this.notifyCustomerDisconnect();
-      this.notifyServerUnconnected();
+    },
+    closeVideo(){
+       this.$store.commit("setVideoData",{id:this.id,clear:true});
     },
     // 通知服务端，已连接客户
     notifyServerConnected() {
@@ -444,11 +449,12 @@ export default {
         `caseId=${currentChat.caseId}`,
         `customerId=${currentChat.customerId}`
       ].join("&");
-      this.$api.common.sessionUnConnected(params).then(res => {});
+      this.$api.common.sessionUnConnected(params).then(res => {
+        // this.$common.logout(this);
+      });
     },
     // 通知客户断开连接
     notifyCustomerDisconnect() {
-      debugger
       let currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
       if (!this.signalr) {
         // TODO signalr尚未连接
@@ -600,6 +606,7 @@ export default {
         var remoteStream = evt.stream;
         var id = remoteStream.getId();
         rtc.remoteStreams.push(remoteStream);
+        debugger
         _this.addView(id);
         remoteStream.play("remote_video_" + id, { fit: "contain" });
         // _this.$Message.info("stream-subscribed remote-uid: " + id);
@@ -635,7 +642,7 @@ export default {
     },
     stopProxyServer(client) {
       // 关闭云代理服务
-      client.stopProxyServer();
+      // client.stopProxyServer();
     },
     // 开始心跳检查
     startPingPang() {

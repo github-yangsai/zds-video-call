@@ -1,4 +1,5 @@
 import { stat } from "fs";
+import _ from 'lodash';
 
 const videoBody = {
     state: {
@@ -12,6 +13,12 @@ const videoBody = {
             state.currentVideo = val;
         },
         setVideoData(state, data) {
+            if (data.clear) {
+                _.remove(state.data, function(item) {
+                    return item.id == data.id;;
+                });
+                return false;
+            }
             let videoData = {};
             for (let i = 0; i < state.data.length; i++) {
                 if (videoData.id == state.data[i].id) {
