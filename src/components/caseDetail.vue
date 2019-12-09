@@ -13,7 +13,7 @@
           <td class="field_td" width="100">报案人</td>
           <td class="content_td">{{ basicInfo.name }}</td>
           <td class="field_td" width="100">报案时间</td>
-          <td class="content_td">{{ basicInfo.isTemp?"":basicInfo.reportTime }}</td>
+          <td class="content_td">{{ basicInfo.isTemp?"":basicInfo.reportTime | transferGMT | date  }}</td>
         </tr>
         <tr>
           <td class="field_td" width="100">手机号</td>
@@ -58,15 +58,15 @@
         </tr>
         <tr>
           <td class="field_td" width="140">交强险保单起始期</td>
-          <td class="content_td">{{ compulsoryInsurance.startDate }}</td>
+          <td class="content_td">{{ compulsoryInsurance.startDate | transferGMT | date  }}</td>
           <td class="field_td" width="140">交强险保单终止期</td>
-          <td class="content_td">{{ compulsoryInsurance.endDate }}</td>
+          <td class="content_td">{{ compulsoryInsurance.endDate | transferGMT | date  }}</td>
         </tr>
         <tr>
           <td class="field_td" width="140">商业险保单起始期</td>
-          <td class="content_td">{{ commercialInsurance.startDate }}</td>
+          <td class="content_td">{{ commercialInsurance.startDate | transferGMT | date  }}</td>
           <td class="field_td" width="140">商业险保单终止期</td>
-          <td class="content_td">{{ commercialInsurance.endDate }}</td>
+          <td class="content_td">{{ commercialInsurance.endDate | transferGMT | date  }}</td>
         </tr>
         <tr>
           <td class="field_td" width="140">主险险别名称</td>
@@ -84,7 +84,7 @@
         </tr>
         <tr>
           <td class="field_td" width="140">登记日期</td>
-          <td class="content_td" colspan="3">{{ commercialInsurance.singeinDate }}</td>
+          <td class="content_td" colspan="3">{{ commercialInsurance.singeinDate | transferGMT | date  }}</td>
         </tr>
       </table>
     </div>
@@ -106,9 +106,6 @@ export default {
   components: {},
   data() {
     return {
-      basicInfo: {},
-      compulsoryInsurance: {},
-      commercialInsurance: {},
       statuss: [
         {
           id: 20,
@@ -161,7 +158,30 @@ export default {
   mounted() {},
   watch: {},
   computed:{
-    
+    basicInfo() {
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data,item=>{
+        return item.id ==_this.id;
+      })
+       return result.basicInfo ? result.basicInfo : {};
+    },
+    compulsoryInsurance(){
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data,item=>{
+        return item.id ==_this.id;
+      })
+       return result.compulsoryInsurance ? result.compulsoryInsurance : {};
+    },
+    commercialInsurance(){
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data,item=>{
+        return item.id ==_this.id;
+      })
+       return result.commercialInsurance ? result.commercialInsurance : {};
+    }
   },
   filters: {
     
@@ -171,6 +191,8 @@ export default {
       //查询基本信息
       this.$api.caseInfo.queryCaseDetail(this.id).then(res => {
         this.basicInfo = res.data;
+        this.$store.commit("setBasicInfoData",{id:this.id,basicInfo:this.basicInfo});
+        console.log(this.$store.state.videoBody.data);
       });
 
       //查询保单信息

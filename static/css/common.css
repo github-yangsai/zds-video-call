@@ -14,3 +14,7 @@ li {
     content: "";
     display: block;
 }
+
+.top_container.double {
+    height: 50%;
+}

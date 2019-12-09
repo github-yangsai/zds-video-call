@@ -428,6 +428,7 @@ export default {
           this.photoList.push(picture);
           this.setScrollTop();
           this.$store.commit("setButtonDisabled", false);
+          this.$Message.success("拍照成功");
         });
       }
     },

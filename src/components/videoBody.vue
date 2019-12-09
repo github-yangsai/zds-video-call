@@ -444,7 +444,7 @@ export default {
           console.log("客户离开房间成功");
           rtc.published = false;
           _this.rtc.joined = false;
-          // _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+          _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
           _this.muteFlag = false;
           _this.$Message.success("挂断成功");
           _this.largeScreen = false;

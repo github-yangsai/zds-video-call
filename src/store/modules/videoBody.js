@@ -36,6 +36,30 @@ const videoBody = {
                 }
             }
         },
+        setBasicInfoData(state, data) {
+            let basicInfo = Object.assign({}, data.basicInfo);
+            for (let i = 0; i < state.data.length; i++) {
+                if (data.id == state.data[i].id) {
+                    state.data[i].basicInfo = basicInfo;
+                    break;
+                }
+            }
+            state.data.push({});
+            state.data.pop();
+        },
+        setPolicyInfo(state, data) {
+            let compulsoryInsurance = Object.assign({}, data.compulsoryInsurance);
+            let commercialInsurance = Object.assign({}, data.commercialInsurance);
+            for (let i = 0; i < state.data.length; i++) {
+                if (data.id == state.data[i].id) {
+                    state.data[i].compulsoryInsurance = compulsoryInsurance;
+                    state.data[i].commercialInsurance = commercialInsurance;
+                    break;
+                }
+            }
+            state.data.push({});
+            state.data.pop();
+        },
         setData(state, data) {
             state.data.push(data);
         },
@@ -49,6 +73,11 @@ const videoBody = {
     },
     actions: {
 
+    },
+    getters: {
+        getCurrentData: (state) => (id) => {
+            return state.data.find(item => item.id === id)
+        }
     }
 };
 
