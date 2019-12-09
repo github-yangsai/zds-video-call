@@ -32,7 +32,7 @@
           >结束通话</Button>
         </div>
         <div class="bar_r clearfix">
-          <a href="javascript:void(0)" class="photo_btn" @click="takePicture">
+          <a href="javascript:void(0)" class="photo_btn" @click="takePicture" :class="{'disabled':takePictureDisabled}">
             <Icon type="md-camera" />
           </a>
           <a
@@ -112,11 +112,14 @@ export default {
           value: "1080p"
         }
       ],
-      submitStatusFlag:false
+      submitStatusFlag: false
     };
   },
   props: ["id"],
   computed: {
+    takePictureDisabled(){
+      return this.$store.state.videoBody.takePicDisabled;
+    },
     video() {
       let data = this.$store.state.videoBody.data.filter(item => {
         return item.id == this.id;
@@ -130,6 +133,14 @@ export default {
     signalr() {
       console.log(this.$store.state.videoBody.signalr);
       return this.$store.state.videoBody.signalr;
+    },
+    currentChat() {
+      let currentChat = sessionStorage.getItem("currentChat");
+      if (currentChat) {
+        return JSON.parse(currentChat);
+      }else{
+        return {}
+      }
     }
   },
   created() {},
@@ -230,7 +241,24 @@ export default {
   },
   methods: {
     takePicture() {
+      if(this.takePictureDisabled){
+        return false;
+      }
       //截图
+      console.log("take a picture");
+      const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
+      const localId = currentUser.id;
+      const customerId = this.currentChat.customerId;
+      this.signalr.send(
+        "SendMessageToUserById",
+        customerId,
+        "TakePhoto",
+        localId
+      );
+      this.$store.commit("setButtonDisabled",true);
+      setTimeout(() => {
+        this.$store.commit("setButtonDisabled",false);
+      }, 3000);
     },
     ctrolAudio() {
       let rtc = this.rtc;
@@ -432,8 +460,8 @@ export default {
         }
       );
     },
-    closeVideo(){
-       this.$store.commit("setVideoData",{id:this.id,clear:true});
+    closeVideo() {
+      this.$store.commit("setVideoData", { id: this.id, clear: true });
     },
     // 通知服务端，已连接客户
     notifyServerConnected() {
@@ -450,7 +478,7 @@ export default {
         `customerId=${currentChat.customerId}`
       ].join("&");
       this.$api.common.sessionUnConnected(params).then(res => {
-        // this.$common.logout(this);
+        this.$common.logout(this);
       });
     },
     // 通知客户断开连接
@@ -606,7 +634,6 @@ export default {
         var remoteStream = evt.stream;
         var id = remoteStream.getId();
         rtc.remoteStreams.push(remoteStream);
-        debugger
         _this.addView(id);
         remoteStream.play("remote_video_" + id, { fit: "contain" });
         // _this.$Message.info("stream-subscribed remote-uid: " + id);
@@ -767,6 +794,9 @@ export default {
 }
 .photo_btn i {
   font-size: 16px;
+}
+.photo_btn.disabled{
+  background: #a1d2ff;
 }
 .mic_btn {
   display: block;

@@ -6,9 +6,13 @@ const videoBody = {
         currentVideo: 1,
         data: [],
         signalr: null,
-        signalrStatus: 0
+        signalrStatus: 0,
+        takePicDisabled: false
     },
     mutations: {
+        setButtonDisabled(state, val) {
+            state.takePicDisabled = val;
+        },
         setCurrentVideo(state, val) {
             state.currentVideo = val;
         },

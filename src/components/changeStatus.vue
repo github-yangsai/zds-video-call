@@ -1,10 +1,10 @@
 <template>
   <div>
-    <Modal v-model="flag" title="请选择工单状态" @on-ok="submit" @on-cancel="cancel" :mask-closable="false">
+    <!-- <Modal v-model="flag" title="请选择工单状态" @on-ok="submit" @on-cancel="cancel" :mask-closable="false">
       <div class="change_status">
         
       </div>
-    </Modal>
+    </Modal> -->
   </div>
 </template>
 <script>

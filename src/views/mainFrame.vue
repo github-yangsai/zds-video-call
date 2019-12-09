@@ -132,7 +132,6 @@ export default {
     watchSignalr() {
       //来电
       this.signalr.on("IncomingCall", chat => {
-        debugger;
         console.log("来电了", chat);
         if (!chat.videoType) {
           chat.videoType = "Agora";

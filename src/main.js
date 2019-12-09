@@ -11,7 +11,9 @@ import api from '@/common/api/index.js'
 import utils from "./common/utils/utils.js";
 import common from "./common/utils/common.js";
 import AgoraRTC from 'agora-rtc-sdk';
+import _ from 'lodash';
 import 'signalr';
+import $ from 'jquery';
 
 
 Vue.use(ViewUI);

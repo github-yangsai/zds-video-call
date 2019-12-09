@@ -34,13 +34,35 @@
 <script>
 export default {
   name: "picturesShow",
-  props:["id"],
+  props: ["id"],
   data() {
+    const PICTURE_UPLOAD_FLAGS = [
+      {
+        id: 0, // INIT
+        translateKey: "other",
+        name: ""
+      },
+      {
+        id: 1, // UPLOADING
+        translateKey: "uploadin",
+        name: "上传中..."
+      },
+      {
+        id: 2, // SUCCEED
+        translateKey: "success",
+        name: "已上传"
+      },
+      {
+        id: 3, // FAILED
+        translateKey: "failed",
+        name: "上传失败"
+      }
+    ];
     return {
-      test:new Date(),
+      test: new Date(),
       categoryList: [],
       dragItem: null,
-      dragIdx:0,
+      dragIdx: 0,
       selectedId: 1,
       currentPhotoList: [],
       photoList: [
@@ -360,59 +382,87 @@ export default {
           createdOn: "2019-09-02T11:27:23.438958Z",
           createdBy: "579570680a506e1320bd2a43"
         }
-      ]
+      ],
+      PICTURE_UPLOAD_FLAGS: PICTURE_UPLOAD_FLAGS
     };
   },
-  computed: {},
-  mounted() {
-    document.addEventListener("dragover",function(e){
-      e.preventDefault();
-    })
-    this.queryPhotoCategory();
-    this.queryPhotos();
-
-//     setInterval(() => {
-//       this.currentPhotoList.push({
-// 	"id": 1,
-// 	"caseId": "5d6cb15be5043000014250d7",
-// 	"categoryId": 1,
-// 	"fileName": "(null)",
-// 	"description": null,
-// 	"attachmentPath": "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1571647121204&di=1771bf0959bec75b23f0b136dca1c185&imgtype=0&src=http%3A%2F%2Fpic34.nipic.com%2F20131030%2F2455348_194508648000_2.jpg",
-// 	"uploadFlag": 0,
-// 	"createdOn": "2019-09-02T07:50:50.346084Z",
-// 	"createdBy": "579570680a506e1320bd2a43"
-// });
-//  let historyDiv = document.getElementById("pictures_list"+this.id);
-//       let scrollHeight = historyDiv.scrollHeight;
-//       this.$nextTick(() => {
-//       document.getElementById("pictures_list"+this.id).scrollTo({top:scrollHeight});
-//        })
-//     }, 5000);
-    
-  },
-  watch:{
-    currentPhotoList(){
-      
+  computed: {
+    signalr() {
+      return this.$store.state.videoBody.signalr;
     }
   },
+  mounted() {
+    document.addEventListener("dragover", function(e) {
+      e.preventDefault();
+    });
+    this.queryPhotoCategory();
+    this.queryPhotos();
+    this.listenSignalr();
+  },
+  watch: {
+    photoList() {
+      this.currentPhotoList = this.filterPhotos(this.selectedId);
+    },
+    currentPhotoList() {}
+  },
   methods: {
+    listenSignalr() {
+      // 监听收到照片
+      if (
+        !(
+          this.signalr.methods.newpicture &&
+          this.signalr.methods.newpicture.length
+        )
+      ) {
+        this.signalr.on("NewPicture", pictureStr => {
+          const picture = _.mapKeys(JSON.parse(pictureStr), function(
+            value,
+            key
+          ) {
+            return _.camelCase(key);
+          });
+          picture.uploadFlag = this.PICTURE_UPLOAD_FLAGS[0]; // 照片默认状态
+          picture.attachmentPath = this.fixFileUrl(picture.attachmentPath);
+          console.log("NewPicture", picture);
+          picture.categoryId = this.selectedId;
+          this.photoList.push(picture);
+          this.setScrollTop();
+          this.$store.commit("setButtonDisabled", false);
+        });
+      }
+    },
+    setScrollTop(){
+      let historyDiv = document.getElementById("pictures_list" + this.id);
+      let scrollHeight = historyDiv.scrollHeight;
+      this.$nextTick(() => {
+        $("#pictures_list" + this.id).animate({ scrollTop: scrollHeight }, 500);
+        // historyDiv.scrollTo({top:scrollHeight});
+      })
+    },
+    fixFileUrl(url) {
+      // let file_site_url = location.protocol + "//" + location.host;
+      let file_site_url = " http://192.168.16.90:8001";
+      return url ? `${file_site_url}/${url}` : url;
+    },
     drop(target) {
       if (target.children) {
         this.$Message.warning("不能拖放至一级菜单");
         return false;
       }
       let data = [{ id: this.dragItem.id, categoryId: target.id }];
-     
-      this.$api.photo.updatePhoto(data).then(res => {
-        console.log(res);
-         this.dragItem.categoryId = target.id;
-       this.currentPhotoList.splice(this.dragIdx,1);
-       this.dragIdx = 0;
-         this.$Message.success(`图片已成功移动至${target.name}！`);
-      }).catch(e=>{
-         this.$Message.error(e);
-      });
+
+      this.$api.photo
+        .updatePhoto(data)
+        .then(res => {
+          console.log(res);
+          this.dragItem.categoryId = target.id;
+          this.currentPhotoList.splice(this.dragIdx, 1);
+          this.dragIdx = 0;
+          this.$Message.success(`图片已成功移动至${target.name}！`);
+        })
+        .catch(e => {
+          this.$Message.error(e);
+        });
     },
     dragStart(index, e) {
       this.dragItem = this.currentPhotoList[index];
@@ -503,18 +553,14 @@ export default {
     queryPhotos() {
       //查询所有图片
       this.$api.photo.queryPhotos(this.id).then(res => {
-        if(res.data){
-           res.data.forEach((item,index)=>{
-            item.attachmentPath = this.getFileUrl() + item.attachmentPath;
-          })
+        if (res.data) {
+          res.data.forEach((item, index) => {
+            item.attachmentPath = this.fixFileUrl(item.attachmentPath);
+          });
           this.photoList = res.data;
           this.currentPhotoList = this.filterPhotos(this.selectedId);
         }
       });
-      
-    },
-    getFileUrl(){
-      return location.protocol + "//" + location.host;
     }
   }
 };
@@ -559,7 +605,7 @@ export default {
   background: #d0e7ff;
 }
 .pictures_list {
-  width:50%;
+  width: 50%;
   padding: 10px;
   background: #ced0db;
   height: calc(50vh - 50px);
