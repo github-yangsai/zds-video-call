@@ -13,7 +13,7 @@
           <td class="field_td" width="100">报案人</td>
           <td class="content_td">{{ basicInfo.name }}</td>
           <td class="field_td" width="100">报案时间</td>
-          <td class="content_td">{{ basicInfo.isTemp?"":basicInfo.reportTime | transferGMT | date  }}</td>
+          <td class="content_td">{{ basicInfo.isTemp?"":basicInfo.reportTime | transferGMT | date }}</td>
         </tr>
         <tr>
           <td class="field_td" width="100">手机号</td>
@@ -58,15 +58,15 @@
         </tr>
         <tr>
           <td class="field_td" width="140">交强险保单起始期</td>
-          <td class="content_td">{{ compulsoryInsurance.startDate | transferGMT | date  }}</td>
+          <td class="content_td">{{ compulsoryInsurance.startDate | transferGMT | date }}</td>
           <td class="field_td" width="140">交强险保单终止期</td>
-          <td class="content_td">{{ compulsoryInsurance.endDate | transferGMT | date  }}</td>
+          <td class="content_td">{{ compulsoryInsurance.endDate | transferGMT | date }}</td>
         </tr>
         <tr>
           <td class="field_td" width="140">商业险保单起始期</td>
-          <td class="content_td">{{ commercialInsurance.startDate | transferGMT | date  }}</td>
+          <td class="content_td">{{ commercialInsurance.startDate | transferGMT | date }}</td>
           <td class="field_td" width="140">商业险保单终止期</td>
-          <td class="content_td">{{ commercialInsurance.endDate | transferGMT | date  }}</td>
+          <td class="content_td">{{ commercialInsurance.endDate | transferGMT | date }}</td>
         </tr>
         <tr>
           <td class="field_td" width="140">主险险别名称</td>
@@ -84,9 +84,36 @@
         </tr>
         <tr>
           <td class="field_td" width="140">登记日期</td>
-          <td class="content_td" colspan="3">{{ commercialInsurance.singeinDate | transferGMT | date  }}</td>
+          <td
+            class="content_td"
+            colspan="3"
+          >{{ commercialInsurance.singeinDate | transferGMT | date }}</td>
         </tr>
       </table>
+      <div v-if="evaluationInfo.coadjusterCode">
+        <h4 class="h4_title">协勘评价信息</h4>
+        <table class="detail_table" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="field_td" width="100">评分等级</td>
+            <td class="content_td" colspan="3">
+              <Rate disabled v-model="level" /> {{ evaluationInfo.level }}分</td>
+          </tr>
+          <tr>
+            <td class="field_td" width="100">评价内容</td>
+            <td class="content_td" colspan="3">{{ evaluationInfo.comment }}</td>
+          </tr>
+          <tr>
+            <td class="field_td" width="100">协勘人</td>
+            <td class="content_td" colspan="3"> {{ evaluationInfo.coadjusterName }} ({{ evaluationInfo.coadjusterCode}})</td>
+          </tr>
+          <tr>
+            <td class="field_td" width="100">评价人</td>
+            <td
+              class="content_td"
+            > {{ evaluationInfo.appraiserName }} ({{ evaluationInfo.appraiserCode}})</td>
+          </tr>
+        </table>
+      </div>
     </div>
     <div class="detail_footer clearfix">
       <span class="status_span">状态：{{ transferStatus(basicInfo.status) }}</span>
@@ -157,41 +184,53 @@ export default {
   },
   mounted() {},
   watch: {},
-  computed:{
+  computed: {
     basicInfo() {
       let data = this.$store.state.videoBody.data;
       let _this = this;
-      let result = _.find(data,item=>{
-        return item.id ==_this.id;
-      })
-       return result.basicInfo ? result.basicInfo : {};
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.basicInfo ? result.basicInfo : {};
     },
-    compulsoryInsurance(){
+    compulsoryInsurance() {
       let data = this.$store.state.videoBody.data;
       let _this = this;
-      let result = _.find(data,item=>{
-        return item.id ==_this.id;
-      })
-       return result.compulsoryInsurance ? result.compulsoryInsurance : {};
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.compulsoryInsurance ? result.compulsoryInsurance : {};
     },
-    commercialInsurance(){
+    commercialInsurance() {
       let data = this.$store.state.videoBody.data;
       let _this = this;
-      let result = _.find(data,item=>{
-        return item.id ==_this.id;
-      })
-       return result.commercialInsurance ? result.commercialInsurance : {};
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.commercialInsurance ? result.commercialInsurance : {};
+    },
+    evaluationInfo(){
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.evaluationInfo ? result.evaluationInfo : {};
+    },
+    level(){
+      return this.evaluationInfo.level!=undefined?this.evaluationInfo.level/2:0;
     }
   },
-  filters: {
-    
-  },
+  filters: {},
   methods: {
     query() {
       //查询基本信息
       this.$api.caseInfo.queryCaseDetail(this.id).then(res => {
         this.basicInfo = res.data;
-        this.$store.commit("setBasicInfoData",{id:this.id,basicInfo:this.basicInfo});
+        this.$store.commit("setBasicInfoData", {
+          id: this.id,
+          basicInfo: this.basicInfo
+        });
         console.log(this.$store.state.videoBody.data);
       });
 
@@ -202,15 +241,14 @@ export default {
       });
     },
     transferStatus(value) {
-        let status = this.statuss.filter(item => {
-          return item.id == value;
-        });
-        if (status.length) {
-          
-          return status[0].name;
-        } else {
-          return "";
-        }
+      let status = this.statuss.filter(item => {
+        return item.id == value;
+      });
+      if (status.length) {
+        return status[0].name;
+      } else {
+        return "";
+      }
     }
   }
 };

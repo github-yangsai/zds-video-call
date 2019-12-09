@@ -14,7 +14,8 @@ const base = {
     getUser: `/api/users/current`,
     sessionConnected: `/api/session-connected`,
     sessionUnConnected: `/api/session-unconnected`,
-    seatIn: `/api/seat-in`
+    seatIn: `/api/seat-in`,
+    feedback: `/api/coadjust/feedback`
 }
 
 export default base;

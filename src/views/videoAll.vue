@@ -4,7 +4,7 @@
       <span>案件号：{{ basicInfo.registNo}}</span>
       <span>车牌号：{{ basicInfo.carNumber }}</span>
       <span>车架号：{{ basicInfo.registNo }}</span>
-      <span>出险时间：{{ basicInfo.reportTime | transferGMT | date  }}</span>
+      <span>出险时间：{{ basicInfo.reportTime | transferGMT | date }}</span>
       <span>报案人：{{ basicInfo.name }}</span>
       <span>报案电话：{{ basicInfo.mobilePhone }}</span>
     </div>
@@ -92,8 +92,8 @@ export default {
       basicInfo: {},
       commercialRiskCodes: COMMERCIAL_INSURANCE_RISK_CODES,
       mainRiskCodes: MAIN_INSURANCE_RISK_CODES,
-      compulsoryInsurance:{},
-      commercialInsurance:{}
+      compulsoryInsurance: {},
+      commercialInsurance: {}
     };
   },
   mounted() {
@@ -128,26 +128,17 @@ export default {
           coverages: []
         }; // 交强险
         const commercialInsurance = _.find(policy, p => {
-          return _.includes(
-            this.commercialRiskCodes,
-            p.riskCode
-          );
+          return _.includes(this.commercialRiskCodes, p.riskCode);
         }) || { coverages: [] };
         commercialInsurance.mainInsurances = _.map(
           _.filter(commercialInsurance.coverages, c => {
-            return _.includes(
-              this.mainRiskCodes,
-              c.kindCode
-            );
+            return _.includes(this.mainRiskCodes, c.kindCode);
           }),
           "kindName"
         ).join("，");
         commercialInsurance.subInsurances = _.map(
           _.filter(commercialInsurance.coverages, c => {
-            return !_.includes(
-              this.mainRiskCodes,
-              c.kindCode
-            );
+            return !_.includes(this.mainRiskCodes, c.kindCode);
           }),
           "kindName"
         ).join("，");
@@ -159,6 +150,12 @@ export default {
           compulsoryInsurance: compulsoryInsurance,
           commercialInsurance: commercialInsurance
         });
+      });
+
+      //查询协勘评价信息
+      this.$api.caseInfo.queryFeedback(this.id).then(res => {
+        let data = res.data;
+        this.$store.commit("setFeedback", { id: this.id, evaluationInfo: data });
       });
     },
     queryCaseDetail() {

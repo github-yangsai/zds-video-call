@@ -60,6 +60,17 @@ const videoBody = {
             state.data.push({});
             state.data.pop();
         },
+        setFeedback(state, data) {
+            let evaluationInfo = Object.assign({}, data.evaluationInfo);
+            for (let i = 0; i < state.data.length; i++) {
+                if (data.id == state.data[i].id) {
+                    state.data[i].evaluationInfo = evaluationInfo;
+                    break;
+                }
+            }
+            state.data.push({});
+            state.data.pop();
+        },
         setData(state, data) {
             state.data.push(data);
         },

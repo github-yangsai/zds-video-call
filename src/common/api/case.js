@@ -12,6 +12,9 @@ const caseInfo = {
     },
     queryPolicyInfo(caseId) {
         return axios.get(`${base.policy}/${caseId}`);
+    },
+    queryFeedback(caseId) {
+        return axios.get(`${base.feedback}/${caseId}`);
     }
 
 }
