@@ -5,6 +5,7 @@ import App from './App'
 import router from './router'
 import ViewUI from 'view-design';
 import "view-design/dist/styles/iview.css";
+import "@/assets/css/common.css";
 import axios from 'axios'
 import store from './store';
 import api from '@/common/api/index.js'

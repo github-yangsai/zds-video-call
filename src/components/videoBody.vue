@@ -2,14 +2,14 @@
   <div class="video_container" :class="{'large':largeScreen}">
     <div class="video_box">
       <div class="video_info">
-        <span>客户：王小二</span>
+        <span>客户：{{ basicInfo.name }}</span>
         <span>ID:12222</span>
       </div>
       <div class="video_body">
         <div class="speed_info">
           <span>上行：100kb/s</span>
           <span>下行：100kb/s</span>
-          <span>上次处理人：王小二</span>
+          <span>上次处理人：{{currentChat.lastOperator }}</span>
         </div>
 
         <div class="video_content">
@@ -131,7 +131,6 @@ export default {
       }
     },
     signalr() {
-      console.log(this.$store.state.videoBody.signalr);
       return this.$store.state.videoBody.signalr;
     },
     currentChat() {
@@ -141,6 +140,14 @@ export default {
       }else{
         return {}
       }
+    },
+    basicInfo() {
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data,item=>{
+        return item.id ==_this.id;
+      })
+       return result.basicInfo ? result.basicInfo : {};
     }
   },
   created() {},

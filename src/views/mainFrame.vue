@@ -2,9 +2,10 @@
   <div id="all_container">
     <div
       id="top_box"
-      class="top_container layout_box"
+      class="top_container layout_box single"
       :class="{'high':currentVideo==id1}"
       v-if="videoFlag1"
+      data-single
     >
       <video-all :id="id1"></video-all>
     </div>
@@ -174,7 +175,7 @@ export default {
       let randomId = Math.floor(Math.random() * 10 + 1);
       let item = {
         id: "",
-        chat: [{ role: "client", msg: "你好，我想问下..." }],
+        chat: [],
         photosCategory: [],
         video: {
           id: randomId,
