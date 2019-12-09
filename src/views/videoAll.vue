@@ -98,7 +98,6 @@ export default {
   },
   mounted() {
     this.queryBasicInfo();
-    // this.$refs[`detail${this.id}`].query();
   },
   computed: {},
   methods: {
@@ -160,9 +159,6 @@ export default {
     },
     queryCaseDetail() {
       this.tabType = 1;
-      // this.$nextTick(() => {
-      //   this.$refs[`detail${this.id}`].query();
-      // });
     },
     queryOrder() {
       this.tabType = 2;

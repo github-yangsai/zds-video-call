@@ -118,19 +118,23 @@
     <div class="detail_footer clearfix">
       <span class="status_span">状态：{{ transferStatus(basicInfo.status) }}</span>
       <div class="detail_btn">
-        <Button type="primary" icon="ios-create">更改状态</Button>
+        <Button type="primary" icon="ios-create" @click="openStatus">更改状态</Button>
         <Button type="primary" icon="md-sync">同步案件</Button>
         <Button type="primary" icon="ios-mail">发送短信</Button>
       </div>
     </div>
+    <change-status :flag="statusFlag" @close="closeStatus"></change-status>
   </div>
 </template>
 
 <script>
+import changeStatus from '@/components/changeStatus';
 export default {
   name: "caseDetail",
   props: ["id"],
-  components: {},
+  components: {
+    changeStatus
+  },
   data() {
     return {
       statuss: [
@@ -179,7 +183,8 @@ export default {
           translateKey: "completed",
           name: "已结案"
         }
-      ]
+      ],
+      statusFlag:false
     };
   },
   mounted() {},
@@ -223,23 +228,6 @@ export default {
   },
   filters: {},
   methods: {
-    query() {
-      //查询基本信息
-      this.$api.caseInfo.queryCaseDetail(this.id).then(res => {
-        this.basicInfo = res.data;
-        this.$store.commit("setBasicInfoData", {
-          id: this.id,
-          basicInfo: this.basicInfo
-        });
-        console.log(this.$store.state.videoBody.data);
-      });
-
-      //查询保单信息
-      this.$api.caseInfo.queryPolicyInfo(this.id).then(res => {
-        console.log(res.data);
-        // this.basicInfo = res.data;
-      });
-    },
     transferStatus(value) {
       let status = this.statuss.filter(item => {
         return item.id == value;
@@ -249,6 +237,12 @@ export default {
       } else {
         return "";
       }
+    },
+    openStatus(){
+      this.statusFlag = true;
+    },
+    closeStatus(){
+       this.statusFlag = false;
     }
   }
 };
