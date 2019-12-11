@@ -1,14 +1,25 @@
 <template>
   <div class="chat_box">
     <div class="chat_history" :id="'chat_history'+ id">
-      <ul>
+      <ul class="history_ul">
         <li :class="{'client':item.role=='client'}" v-for="(item,index) in list" :key="index">
           <!-- <span v-if="item.role=='client'">客户：{{item.msg}}</span> -->
           <div v-if="item.role=='me'">
-              <span style="padding-right:10px;">{{item.msg}}</span>：我
+            <span style="padding-right:10px;">{{item.msg}}</span>：我
           </div>
         </li>
       </ul>
+      <div class="guide_box" v-show="guideFlag">
+        <ul class="clearfix guide_ul" :id="'guide_ul'+id">
+          <li v-for="(item,index) in guideList" :key="index">
+            <img :src="item.picPath" />
+            <p>{{item.name}}</p>
+            <a href="javascript:void(0)" class="send_btn" @click="sendGuidePic(item)">
+               <Button type="primary" shape="circle" icon="ios-send"></Button>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="chat_bar">
       <Row>
@@ -18,9 +29,10 @@
         </Col>
         <Col span="10">
           <a href="javascript:void(0)" class="send_btn" @click="sendMsg">发送</a>
-          <a href="javascript:void(0)" class="guide_btn">
+          <a href="javascript:void(0)" class="guide_btn" @click="toggleGuide">
             引导图
-            <Icon type="ios-arrow-up" />
+            <Icon type="ios-arrow-up" v-if="guideFlag" />
+            <Icon type="ios-arrow-down" v-if="!guideFlag" />
           </a>
         </Col>
       </Row>
@@ -32,7 +44,9 @@ export default {
   name: "chatBody",
   data() {
     return {
-      sendCon: ""
+      sendCon: "",
+      guideFlag: false,
+      guideList: []
     };
   },
   props: ["id"],
@@ -51,16 +65,69 @@ export default {
       let currentChat = sessionStorage.getItem("currentChat");
       if (currentChat) {
         return JSON.parse(currentChat);
-      }else{
-        return {}
+      } else {
+        return {};
       }
     },
     signalr() {
       return this.$store.state.videoBody.signalr;
+    },
+    currentPictureCategory() {
+      let data = this.$store.state.videoBody.data;
+      let _this = this;
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.currentPictureCategory ? result.currentPictureCategory : 1;
     }
   },
-  mounted() {},
+  mounted() {
+    this.queryGuidePic();
+  },
   methods: {
+    // 初始化分类引导图（从api获取）
+    queryGuidePic() {
+      this.$api.photo.queryGuidePic().then(res => {
+        const fixedPathPictures = _.forEach(res.data, c => {
+          c.picPath = this.$common.fixFileUrl(c.picPath);
+        });
+        const guidePictures = _.groupBy(fixedPathPictures, "categoryId");
+        this.$store.commit("setGuidePictures", guidePictures);
+        this.$store.state.videoBody;
+        this.getGuidePictures(
+          guidePictures,
+          this.id,
+          this.currentPictureCategory
+        );
+      });
+    },
+    // 向客户推送引导图
+    sendGuidePic(picture) {
+      const customerId = this.currentChat.customerId;
+      this.signalr.send(
+        "SendMessageToUserById",
+        customerId,
+        "GuidePic",
+        picture.id
+      );
+      this.langService.pop(
+        "success",
+        { key: "MESSAGES.sendGuideSuccess" },
+        { key: `GUIDE_PICTURES.${picture.id}` }
+      );
+    },
+    getGuidePictures(guidePictures, caseId, categoryId) {
+      this.guideList = (guidePictures && guidePictures[categoryId]) || [];
+    },
+    toggleGuide() {
+      if (!this.guideFlag) {
+        //打开指引图
+        this.guideFlag = true;
+      } else {
+        //关闭指引图
+        this.guideFlag = false;
+      }
+    },
     enterSend(e) {
       if (e.keyCode == 13) {
         this.sendMsg();
@@ -73,6 +140,7 @@ export default {
       let data = { role: "me", msg: this.sendCon };
       const message = this.sendCon;
       if (!this.sendCon) {
+         this.$Message.warning("请输入内容");
         return;
       }
       this.list.push(data);
@@ -110,15 +178,16 @@ export default {
   overflow-y: auto;
   background: #fff;
   height: calc(50vh - 80px);
+  position: relative;
 }
-.chat_history ul {
+.history_ul ul {
   padding: 20px;
 }
-.chat_history li {
+.history_ul li {
   text-align: right;
   margin-bottom: 10px;
 }
-.chat_history li.client {
+.history_ul li.client {
   text-align: left;
 }
 .chat_bar {
@@ -164,6 +233,40 @@ export default {
 }
 .chat_bar a:hover {
   background: #298de8;
+}
+.guide_box {
+  width: 100%;
+  height: 120px;
+  background: rgba(0, 0, 0, 0.76);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 10px;
+  overflow-y: auto;
+}
+.guide_ul li {
+  float: left;
+  text-align: center;
+  margin: 0 5px 5px;
+  width: 120px;
+  position: relative;
+}
+.guide_ul li img {
+  width: 100%;
+}
+.guide_ul li p {
+  color: #fff;
+  font-size: 12px;
+}
+.send_btn{
+  display:none;
+  position:absolute;
+  left:50%;
+  top:50%;
+  color:#fff;
+}
+.guide_ul li:hover .send_btn{
+  display:block;
 }
 </style>
 <style>

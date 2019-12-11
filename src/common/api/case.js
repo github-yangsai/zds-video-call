@@ -15,7 +15,13 @@ const caseInfo = {
     },
     queryFeedback(caseId) {
         return axios.get(`${base.feedback}/${caseId}`);
-    }
+    },
+    finished(params) {
+        return axios.post(`${base.finished}`, params);
+    },
+    existFeedback(caseId) {
+        return axios.get(`${base.feedbackExist}/${caseId}`);
+    },
 
 }
 

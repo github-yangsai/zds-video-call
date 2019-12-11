@@ -478,6 +478,7 @@ export default {
         return false;
       }
       this.selectedId = item.id;
+      this.$store.commit("setCurrentPictureCategory",{id:this.id,currentPictureCategory:this.selectedId});
       this.currentPhotoList = this.filterPhotos(item.id);
       //展开和高亮
       if (item.children) {

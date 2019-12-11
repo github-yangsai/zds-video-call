@@ -30,6 +30,10 @@ const photo = {
     updatePhoto(params) {
         return axios.put(`${base.updatePhoto}/`, params);
     },
+    //查询引导图
+    queryGuidePic() {
+        return axios.get(`${base.guidePic}`);
+    },
 }
 
 export default photo;

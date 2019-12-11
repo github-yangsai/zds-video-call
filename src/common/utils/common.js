@@ -13,7 +13,12 @@ const Common = {
         _this.$store.commit("setSignalrStatus", 0);
         sessionStorage.clear();
         _this.$router.push({ name: "login" });
-    }
+    },
+    fixFileUrl(url) {
+        // let file_site_url = location.protocol + "//" + location.host;
+        let file_site_url = " http://192.168.16.90:8001";
+        return url ? `${file_site_url}/${url}` : url;
+    },
 
 
 };

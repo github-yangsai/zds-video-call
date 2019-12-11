@@ -7,9 +7,13 @@ const videoBody = {
         data: [],
         signalr: null,
         signalrStatus: 0,
-        takePicDisabled: false
+        takePicDisabled: false,
+        guidesPictures: []
     },
     mutations: {
+        setGuidePictures(state, data) {
+            state.guidesPictures = data;
+        },
         setButtonDisabled(state, val) {
             state.takePicDisabled = val;
         },
@@ -71,6 +75,17 @@ const videoBody = {
             state.data.push({});
             state.data.pop();
         },
+        setCurrentPictureCategory(state, data) {
+            let currentPictureCategory = Object.assign({}, data.currentPictureCategory);
+            for (let i = 0; i < state.data.length; i++) {
+                if (data.id == state.data[i].id) {
+                    state.data[i].currentPictureCategory = currentPictureCategory;
+                    break;
+                }
+            }
+            state.data.push({});
+            state.data.pop();
+        },
         setData(state, data) {
             state.data.push(data);
         },
@@ -79,7 +94,8 @@ const videoBody = {
         },
         setSignalrStatus(state, data) {
             state.signalrStatus = data;
-        }
+        },
+
 
     },
     actions: {

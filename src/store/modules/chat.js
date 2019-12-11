@@ -1,10 +1,10 @@
 const currentChat = {
     state: {
-        photosCategory: [],
+        guidesPictures: [],
     },
     mutations: {
-        setPhotosCategory(state, data) {
-            state.photosCategory = data;
+        setGuidePictures(state, data) {
+            state.guidesPictures = data;
         }
     },
     actions: {
