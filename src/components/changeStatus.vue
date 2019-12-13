@@ -1,26 +1,30 @@
 <template>
-  <Modal v-model="flag" title="请选择工单状态" @on-cancel="cancel" :mask-closable="false">
-    <div class="change_status">
-      <RadioGroup v-model="status">
-        <Radio :label="50">转线下</Radio>
-        <Radio :label="43">已处理</Radio>
-      </RadioGroup>
-      <div class="child_box">
-        <CheckboxGroup v-model="dealStatus" v-if="status==43">
-          <Checkbox :label="42">查勘完成</Checkbox>
-          <Checkbox :label="2">标的车定损完成</Checkbox>
-          <Checkbox :label="3">三者车定损完成</Checkbox>
-          <Checkbox :label="4">单证收集完成</Checkbox>
-        </CheckboxGroup>
+  <div>
+    <Modal v-model="flag" title="请选择工单状态" @on-cancel="cancel" :mask-closable="false">
+      <div class="change_status">
+        <RadioGroup v-model="status">
+          <Radio :label="50">转线下</Radio>
+          <Radio :label="43">已处理</Radio>
+        </RadioGroup>
+        <div class="child_box">
+          <CheckboxGroup v-model="dealStatus" v-if="status==43">
+            <Checkbox :label="42">查勘完成</Checkbox>
+            <Checkbox :label="2">标的车定损完成</Checkbox>
+            <Checkbox :label="3">三者车定损完成</Checkbox>
+            <Checkbox :label="4">单证收集完成</Checkbox>
+          </CheckboxGroup>
+        </div>
       </div>
-    </div>
-    <div slot="footer" style="text-align:right;">
-      <Button @click="cancel">暂不提交</Button>
-      <Button type="primary" @click="submit" :disabled="status==43&&!isDeal">提交</Button>
-    </div>
-  </Modal>
+      <div slot="footer" style="text-align:right;">
+        <Button @click="cancel">暂不提交</Button>
+        <Button type="primary" @click="submit" :disabled="status==43&&!isDeal">提交</Button>
+      </div>
+    </Modal>
+    <collaborative-evaluation :flag="evaluationFlag" :caseId="currentTask.id" @close="closeEvalutation"></collaborative-evaluation>
+  </div>
 </template>
 <script>
+import collaborativeEvaluation from "@/components/collaborativeEvaluation";
 export default {
   name: "changeStatus",
   props: ["flag", "source", "HasInteractive"],
@@ -29,8 +33,12 @@ export default {
       registNo: "",
       lastLaunchTime: "",
       status: 50,
-      dealStatus: []
+      dealStatus: [],
+      evaluationFlag:false
     };
+  },
+  components: {
+    collaborativeEvaluation
   },
   methods: {
     submit() {
@@ -49,8 +57,8 @@ export default {
 
       if (status == 50) {
         //转线下：当前时间和报案时间在一个小时以内需提示后再调接口
-        if (this.basicInfo.reportTime) {
-          let reportDate = new Date(this.basicInfo.reportTime);
+        if (this.currentTask.reportTime) {
+          let reportDate = new Date(this.currentTask.reportTime);
           let reportTime = reportDate.setHours(reportDate.getHours() + 1);
           let currentTime = new Date().getTime();
           if (currentTime <= reportTime) {
@@ -80,7 +88,7 @@ export default {
         caseId: this.currentTask.id,
         status: status
       };
-      this.$api.case.finished(body).then(
+      this.$api.caseInfo.finished(body).then(
         res => {
           if (status == 50) {
             this.$emit("close");
@@ -134,7 +142,7 @@ export default {
     },
     showEvaluation() {
       // 提交前判断该协勘是否已经被评价
-      this.$api.case.existFeedback(this.currentTask.id).then(res => {
+      this.$api.caseInfo.existFeedback(this.currentTask.id).then(res => {
         let data = res.data;
         if (!data) {
           this.evaluationFlag = true;
@@ -144,17 +152,21 @@ export default {
       });
     },
     cancel() {
+      debugger
       if (this.HasInteractive) {
         const status = 44; // 暂不处理
         const body = {
           caseId: this.currentTask.id,
           status: status
         };
-        this.$api.case.finished(body).then();
+        this.$api.caseInfo.finished(body).then();
         this.currentTask.status = status;
         // this.store.dispatch(TaskActions.selectTask(this.currentTask));
       }
       this.$emit("close", false);
+    },
+    closeEvalutation(){
+      this.evaluationFlag = false;
     }
   },
   computed: {
@@ -164,7 +176,7 @@ export default {
       let result = _.find(data, item => {
         return item.id == _this.id;
       });
-      return result.basicInfo ? result.basicInfo : {};
+      return result && result.basicInfo ? result.basicInfo : {};
     },
     isDeal() {
       let len = this.dealStatus.length;

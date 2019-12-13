@@ -13,18 +13,28 @@ import utils from "./common/utils/utils.js";
 import common from "./common/utils/common.js";
 import AgoraRTC from 'agora-rtc-sdk';
 import _ from 'lodash';
-import 'signalr';
 import $ from 'jquery';
+// import VueSocketio from 'vue-socket.io';
+// import socketio from 'socket.io-client';
 
 
 Vue.use(ViewUI);
 Vue.use(AgoraRTC);
 
+// Vue.use(new VueSocketio({
+//         debug: true,
+//         // 服务器端地址
+//         connection: socketio(`http://192.168.16.90:8001?access_token=${sessionStorage.getItem('token')}`, {
+//             path: ''
+//         }),
+//         vuex: {}
+//     }))
+// Vue.use(VueSocketio, socketio(`http://192.168.16.90:800?access_token=${sessionStorage.getItem(token)}`), store);
+
 Vue.config.productionTip = false;
 Vue.prototype.$axios = axios; // 将api挂载到vue的原型上
 Vue.prototype.$api = api;
 Vue.prototype.$common = common;
-// Vue.prototype.signalr = signalr;
 
 
 

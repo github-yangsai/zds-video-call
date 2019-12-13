@@ -4,9 +4,41 @@ import _ from 'lodash';
 const videoBody = {
     state: {
         currentVideo: 1,
-        data: [],
+        data: [
+            //     {
+            //     id: "",
+            //     video: {
+            //         id: "",
+            //         muteFlag: false,
+            //         takePicDisabled: false,
+            //         rtc: {
+            //             client: null,
+            //             joined: false,
+            //             published: false,
+            //             localStream: null,
+            //             remoteStreams: [],
+            //             params: {}
+            //         },
+            //         option: {
+            //             mode: "rtc",
+            //             codec: "h264",
+            //             appID: "8686a594400c46da93b0dcc34ad98a6b",
+            //             channel: "12",
+            //             uid: 2222,
+            //             token: ""
+            //         }
+            //     },
+            //     basicInfo: {},
+            //     compulsoryInsurance: {},
+            //     commercialInsurance: {},
+            //     evaluationInfo: {},
+            //     currentPictureCategory: 1
+            // }
+        ],
         signalr: null,
         signalrStatus: 0,
+        socket: null,
+        socketStatus: 0,
         takePicDisabled: false,
         guidesPictures: []
     },
@@ -14,8 +46,8 @@ const videoBody = {
         setGuidePictures(state, data) {
             state.guidesPictures = data;
         },
-        setButtonDisabled(state, val) {
-            state.takePicDisabled = val;
+        setButtonDisabled(state, data) {
+            state.takePicDisabled = data;
         },
         setCurrentVideo(state, val) {
             state.currentVideo = val;
@@ -29,7 +61,7 @@ const videoBody = {
             }
             let videoData = {};
             for (let i = 0; i < state.data.length; i++) {
-                if (videoData.id == state.data[i].id) {
+                if (data.id == state.data[i].id) {
                     videoData = state.data[i].video;
                     break;
                 }
@@ -94,6 +126,12 @@ const videoBody = {
         },
         setSignalrStatus(state, data) {
             state.signalrStatus = data;
+        },
+        setSocket(state, data) {
+            state.socket = data;
+        },
+        setSocketStatus(state, data) {
+            state.socketStatus = data;
         },
 
 

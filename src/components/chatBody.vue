@@ -14,7 +14,7 @@
           <li v-for="(item,index) in guideList" :key="index">
             <img :src="item.picPath" />
             <p>{{item.name}}</p>
-            <a href="javascript:void(0)" class="send_btn" @click="sendGuidePic(item)">
+            <a href="javascript:void(0)" class="push_btn" title="推送引导图" @click="sendGuidePic(item)">
                <Button type="primary" shape="circle" icon="ios-send"></Button>
             </a>
           </li>
@@ -69,8 +69,8 @@ export default {
         return {};
       }
     },
-    signalr() {
-      return this.$store.state.videoBody.signalr;
+    socket() {
+      return this.$store.state.videoBody.socket;
     },
     currentPictureCategory() {
       let data = this.$store.state.videoBody.data;
@@ -104,17 +104,14 @@ export default {
     // 向客户推送引导图
     sendGuidePic(picture) {
       const customerId = this.currentChat.customerId;
-      this.signalr.send(
+      debugger
+      this.$common.send(
         "SendMessageToUserById",
         customerId,
         "GuidePic",
         picture.id
       );
-      this.langService.pop(
-        "success",
-        { key: "MESSAGES.sendGuideSuccess" },
-        { key: `GUIDE_PICTURES.${picture.id}` }
-      );
+      this.$Message.success(`推送成功`);
     },
     getGuidePictures(guidePictures, caseId, categoryId) {
       this.guideList = (guidePictures && guidePictures[categoryId]) || [];
@@ -150,7 +147,7 @@ export default {
         caseId: caseId,
         content: message
       };
-      this.signalr.send(
+      this.$common.send(
         "SendMessageToUserById",
         customerId,
         "Chat",
@@ -247,8 +244,8 @@ export default {
 .guide_ul li {
   float: left;
   text-align: center;
-  margin: 0 5px 5px;
-  width: 120px;
+  margin: 0 1% 5px;
+  width: 48%;
   position: relative;
 }
 .guide_ul li img {
@@ -258,14 +255,19 @@ export default {
   color: #fff;
   font-size: 12px;
 }
-.send_btn{
+.push_btn{
   display:none;
   position:absolute;
   left:50%;
   top:50%;
   color:#fff;
+  margin-left:-15px;
+  margin-top:-15px;
 }
-.guide_ul li:hover .send_btn{
+.push_btn i {
+  font-size:20px;
+}
+.guide_ul li:hover .push_btn{
   display:block;
 }
 </style>

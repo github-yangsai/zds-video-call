@@ -18,7 +18,8 @@ const base = {
     feedback: `/api/coadjust/feedback`,
     guidePic: `/api/guidepics/0`,
     finished: `/api/case/finished`,
-    feedbackExist: `/api/coadjust/feedback/exist`
+    feedbackExist: `/api/coadjust/feedback/exist`,
+    submitFeedback: `/api/coadjust/feedback`
 }
 
 export default base;

@@ -32,7 +32,12 @@
           >结束通话</Button>
         </div>
         <div class="bar_r clearfix">
-          <a href="javascript:void(0)" class="photo_btn" @click="takePicture" :class="{'disabled':takePictureDisabled}">
+          <a
+            href="javascript:void(0)"
+            class="photo_btn"
+            @click="takePicture"
+            :class="{'disabled':takePictureDisabled}"
+          >
             <Icon type="md-camera" />
           </a>
           <a
@@ -59,15 +64,18 @@
         </div>
       </div>
     </div>
+    <change-status :flag="statusFlag" @close="closeStatus" source="video"></change-status>
   </div>
 </template>
 <script>
 import AgoraRTC from "agora-rtc-sdk";
 import _ from "lodash";
+import changeStatus from "@/components/changeStatus";
 export default {
   name: "videoBody",
   data() {
     return {
+      statusFlag:false,
       isFirstPingPang: true,
       pingPang: {
         pingInterval: null,
@@ -115,9 +123,12 @@ export default {
       submitStatusFlag: false
     };
   },
+  components: {
+    changeStatus
+  },
   props: ["id"],
   computed: {
-    takePictureDisabled(){
+    takePictureDisabled() {
       return this.$store.state.videoBody.takePicDisabled;
     },
     video() {
@@ -130,24 +141,24 @@ export default {
         return {};
       }
     },
-    signalr() {
-      return this.$store.state.videoBody.signalr;
+    socket() {
+      return this.$store.state.videoBody.socket;
     },
     currentChat() {
       let currentChat = sessionStorage.getItem("currentChat");
       if (currentChat) {
         return JSON.parse(currentChat);
-      }else{
-        return {}
+      } else {
+        return {};
       }
     },
     basicInfo() {
       let data = this.$store.state.videoBody.data;
       let _this = this;
-      let result = _.find(data,item=>{
-        return item.id ==_this.id;
-      })
-       return result.basicInfo ? result.basicInfo : {};
+      let result = _.find(data, item => {
+        return item.id == _this.id;
+      });
+      return result.basicInfo ? result.basicInfo : {};
     }
   },
   created() {},
@@ -180,8 +191,8 @@ export default {
     this.notifyServerConnected();
   },
   watch: {
-    signalr(signalr) {
-      if (!signalr) {
+    socket(socket) {
+      if (!socket) {
         return;
       }
       let _that = this;
@@ -193,13 +204,8 @@ export default {
           _that.startPingPang();
         }
         // 客户端已准备好，开始pingPang
-      } else if (
-        !(
-          this.signalr.methods.startping &&
-          this.signalr.methods.startping.length
-        )
-      ) {
-        this.signalr.on("StartPing", msg => {
+      } else if (!this.socket._callbacks.$StartPing) {
+        this.socket.on("StartPing", msg => {
           console.log("===start pingpang");
           _that.isFirstPingPang = false;
           _that.startPingPang();
@@ -207,13 +213,8 @@ export default {
       }
 
       // 监听客户重连
-      if (
-        !(
-          this.signalr.methods.reconnect &&
-          this.signalr.methods.reconnect.length
-        )
-      ) {
-        this.signalr.on("Reconnect", caseId => {
+      if (!this.socket._callbacks.$Reconnect) {
+        this.socket.on("Reconnect", caseId => {
           console.log("------Reconnect:", caseId);
           _that.isShowLeave = false; // 隐藏更改状态modal
           if (_that.timer) {
@@ -225,13 +226,8 @@ export default {
       }
 
       // 监听客户断开（消息来自app端或服务端）
-      if (
-        !(
-          this.signalr.methods.disconnectme &&
-          this.signalr.methods.disconnectme.length
-        )
-      ) {
-        this.signalr.on("DisconnectMe", () => {
+      if (!this.socket._callbacks.$DisconnectMe) {
+        this.socket.on("DisconnectMe", () => {
           console.log("------DisconnectMe");
           if (_that.timer) {
             clearTimeout(_that.timer);
@@ -247,8 +243,28 @@ export default {
     }
   },
   methods: {
+    closeStatus(){
+      this.statusFlag = false;
+    },
+    //协勘评价后再跳转页面
+    evaluationAfter() {
+      // sessionStorage.setItem("currentChat","{}");
+      // this.store.dispatch(ChatActions.setCurrentChat({}));
+      // this.store.dispatch(TaskActions.selectHistoryTask({}));
+
+      // this.resetPictureRedux();
+      // sessionStorage.removeItem("isInChannel");
+      // sessionStorage.removeItem("currentChat");
+      // if (!this.isRejected) {
+      //   // 非异地踢出
+      //   this.router.navigate(["/main/desktop/waiting/histories"], {
+      //     queryParams: { page: 1, registNo: this._registNo }
+      //   });
+      //   this.notifyServerUnconnected();
+      // }
+    },
     takePicture() {
-      if(this.takePictureDisabled){
+      if (this.takePictureDisabled) {
         return false;
       }
       //截图
@@ -256,15 +272,15 @@ export default {
       const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
       const localId = currentUser.id;
       const customerId = this.currentChat.customerId;
-      this.signalr.send(
+      this.socket.emit(
         "SendMessageToUserById",
         customerId,
         "TakePhoto",
         localId
       );
-      this.$store.commit("setButtonDisabled",true);
+      this.$store.commit("setButtonDisabled", true);
       setTimeout(() => {
-        this.$store.commit("setButtonDisabled",false);
+        this.$store.commit("setButtonDisabled", false);
       }, 3000);
     },
     ctrolAudio() {
@@ -451,7 +467,10 @@ export default {
           console.log("客户离开房间成功");
           rtc.published = false;
           _this.rtc.joined = false;
-          _this.$store.commit("setVideoData",{id:_this.id,muteFlag:false});
+          _this.$store.commit("setVideoData", {
+            id: _this.id,
+            muteFlag: false
+          });
           _this.muteFlag = false;
           _this.$Message.success("挂断成功");
           _this.largeScreen = false;
@@ -491,11 +510,10 @@ export default {
     // 通知客户断开连接
     notifyCustomerDisconnect() {
       let currentChat = JSON.parse(sessionStorage.getItem("currentChat"));
-      if (!this.signalr) {
-        // TODO signalr尚未连接
+      if (!this.socket) {
         return;
       }
-      this.signalr.send(
+      this.socket.emit(
         "SendMessageToUserById",
         currentChat.customerId,
         "Disconnect",
@@ -689,8 +707,8 @@ export default {
       _that.pingPang.pingInterval = setInterval(() => {
         const timeStr = new Date();
         _that.pingPang.pingCount++;
-        if (this.signalr) {
-          this.signalr.send(
+        if (this.socket) {
+          this.socket.send(
             "SendMessageToUserById",
             customerId,
             "Ping",
@@ -713,8 +731,8 @@ export default {
       }, this.apiService.PING_INTERVAL * 4);
 
       // 监听客户pang
-      if (!(this.signalr.methods.pang && this.signalr.methods.pang.length)) {
-        this.signalr.on("Pang", timeStr => {
+      if (!this.socket._callbacks.Pang) {
+        this.socket.on("Pang", timeStr => {
           _that.pingPang.pangCount++;
         });
       }
@@ -802,7 +820,7 @@ export default {
 .photo_btn i {
   font-size: 16px;
 }
-.photo_btn.disabled{
+.photo_btn.disabled {
   background: #a1d2ff;
 }
 .mic_btn {

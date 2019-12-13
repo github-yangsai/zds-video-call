@@ -22,6 +22,9 @@ const caseInfo = {
     existFeedback(caseId) {
         return axios.get(`${base.feedbackExist}/${caseId}`);
     },
+    submitFeedback(params) {
+        return axios.post(`${base.submitFeedback}`, params);
+    },
 
 }
 

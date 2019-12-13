@@ -387,8 +387,8 @@ export default {
     };
   },
   computed: {
-    signalr() {
-      return this.$store.state.videoBody.signalr;
+    socket() {
+      return this.$store.state.videoBody.socket;
     }
   },
   mounted() {
@@ -397,7 +397,7 @@ export default {
     });
     this.queryPhotoCategory();
     this.queryPhotos();
-    this.listenSignalr();
+    this.listenSocket();
   },
   watch: {
     photoList() {
@@ -406,15 +406,10 @@ export default {
     currentPhotoList() {}
   },
   methods: {
-    listenSignalr() {
+    listenSocket() {
       // 监听收到照片
-      if (
-        !(
-          this.signalr.methods.newpicture &&
-          this.signalr.methods.newpicture.length
-        )
-      ) {
-        this.signalr.on("NewPicture", pictureStr => {
+      if (!this.socket._callbacks.$NewPicture) {
+        this.socket.on("NewPicture", pictureStr => {
           const picture = _.mapKeys(JSON.parse(pictureStr), function(
             value,
             key
@@ -432,13 +427,13 @@ export default {
         });
       }
     },
-    setScrollTop(){
+    setScrollTop() {
       let historyDiv = document.getElementById("pictures_list" + this.id);
       let scrollHeight = historyDiv.scrollHeight;
       this.$nextTick(() => {
         $("#pictures_list" + this.id).animate({ scrollTop: scrollHeight }, 500);
         // historyDiv.scrollTo({top:scrollHeight});
-      })
+      });
     },
     fixFileUrl(url) {
       // let file_site_url = location.protocol + "//" + location.host;
@@ -478,7 +473,10 @@ export default {
         return false;
       }
       this.selectedId = item.id;
-      this.$store.commit("setCurrentPictureCategory",{id:this.id,currentPictureCategory:this.selectedId});
+      this.$store.commit("setCurrentPictureCategory", {
+        id: this.id,
+        currentPictureCategory: this.selectedId
+      });
       this.currentPhotoList = this.filterPhotos(item.id);
       //展开和高亮
       if (item.children) {

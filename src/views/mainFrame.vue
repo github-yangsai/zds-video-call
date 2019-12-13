@@ -35,6 +35,7 @@
 <script>
 import videoAll from "@/views/videoAll";
 import ringAnswer from "@/components/ringAnswer";
+import io from "socket.io-client";
 export default {
   name: "mainFrame",
   components: {
@@ -48,11 +49,12 @@ export default {
       videoFlag2: false,
       id1: "",
       id2: "",
-      signalr: null
+      socket: null
     };
   },
   mounted() {
-    this.initSignalr();
+    this.initSocket();
+    this.seatInAsync();
   },
   computed: {
     currentVideo() {
@@ -64,8 +66,8 @@ export default {
     closeAnswer() {
       this.ringFlag = false;
     },
-    initSignalr() {
-      if (this.signalr) {
+    initSocket() {
+      if (this.socket) {
         return;
       }
       let params = "";
@@ -77,79 +79,52 @@ export default {
       //   ].join('&');
       //   this.$store.dispatch(ChatActions.setCurrentChat(currentChat));
       // }
-      // this.signalr = $.hubConnection(`http://192.168.16.90:8001/RemoteFunctionHub?${params}`)
-      const signalR = require("@aspnet/signalr");
-      this.signalr = new signalR.HubConnectionBuilder()
-        .withUrl(`/RemoteFunctionHub?${params}`, {
-          accessTokenFactory: () => {
-            // 身份验证和授权
-            return sessionStorage.getItem("token");
-          }
-        })
-        .build();
-      this.signalr.serverTimeoutInMilliseconds = 1000 * 3600 * 16; // 超时时间
-      // 处理：刚连接signalr，就收到断开消息
-      this.isStartingSignalr = true;
+      let token = sessionStorage.getItem("token");
+      this.socket = io(`http://192.168.16.90:8001?access_token=${token}`);
+      this.isStartingSocket = true;
       setTimeout(() => {
-        this.isStartingSignalr = false;
+        this.isStartingSocket = false;
       }, 3000);
-      this.startSignalr();
-
-      this.signalr.onclose(() => {
-        console.log("signalr断开了...");
-        if (this.isStartingSignalr) {
-          this.startSignalr();
-          return;
-        }
-        this.$store.commit("setSignalr", null);
-        this.$store.commit("setSignalrStatus", 0);
-      });
+      this.startSocket();
     },
-    startSignalr() {
-      this.signalr
-        .start()
-        .catch(err => console.log("signalr err", err))
-        .then(() => {
-          console.log("----signalr is ready");
-          this.signalr.send(
-            "SendMessageToUserById",
-            "customerId",
-            "EvidenceSuggestion",
-            "message"
-          );
-          this.signalr.on("Disconnect", () => {
-            this.$Message.error("账号在其它设备登录，当前登录被踢出");
-            // if (this.isReceipting) {
-            //   this.messageService.publishCloseVideo();
-            // } else {
-            //   this.messageService.publishLogout();
-            // }
-          });
-          this.$store.commit("setSignalr", this.signalr);
-          this.$store.commit("setSignalrStatus", 1);
-          this.watchSignalr();
+    startSocket() {
+      this.socket.on("connect", () => {
+        this.$store.commit("setSocket", this.socket);
+        this.$store.commit("setSocketStatus", 1);
+        this.socket.on("Disconnect", () => {
+          this.$Message.error("账号在其它设备登录，当前登录被踢出");
+          // if (this.isReceipting) {
+          //   this.messageService.publishCloseVideo();
+          // } else {
+          //   this.messageService.publishLogout();
+          // }
         });
+        this.watchSocket();
+      });
     },
-    watchSignalr() {
-      //来电
-      this.signalr.on("IncomingCall", chat => {
-        console.log("来电了", chat);
-        if (!chat.videoType) {
-          chat.videoType = "Agora";
-        }
-        this.showRing(chat);
-      });
+    watchSocket() {
+      if (!this.socket._callbacks.$IncomingCall) {
+        this.socket.on("IncomingCall", chat => {
+          console.log("来电了", chat);
+          if (!chat.videoType) {
+            chat.videoType = "Agora";
+          }
+          this.showRing(chat);
+        });
+      }
       //对方结束通话或取消
-      this.signalr.on("CancelCall", chat => {
-        console.log("对方取消了", chat);
-        sessionStorage.setItem("currentChat", JSON.stringify(chat));
-        this.closeAnswer();
-        let _this = this;
-        //重新入席，进入空闲状态
-        setTimeout(() => {
-          _this.seatInAsync();
-        }, 1000);
-      });
+      if (!this.socket._callbacks.$CancelCall) {
+        this.socket.on("CancelCall", chat => {
+          console.log("对方取消了", chat);
+          sessionStorage.setItem("currentChat", JSON.stringify(chat));
+          this.closeAnswer();
+          let _this = this;
+          //重新入席，进入空闲状态
+          setTimeout(() => {
+            _this.seatInAsync();
+          }, 1000);
+        });
+      }
     },
     seatInAsync() {
       sessionStorage.setItem("isSeatIn", "true");
@@ -166,7 +141,7 @@ export default {
       const currentUser = JSON.parse(sessionStorage.getItem("currentUser"));
       const localId = currentUser.id;
       const customerId = currentChat.customerId;
-      this.signalr.send(
+      this.socket.emit(
         "SendMessageToUserById",
         customerId,
         "InspectorId",
