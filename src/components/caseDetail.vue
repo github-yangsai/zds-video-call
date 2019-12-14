@@ -248,13 +248,13 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .case_detail {
   position: relative;
   height: calc(50vh - 50px);
 }
 .case_main {
-  height: calc(50vh - 80px);
+  height: calc(100% - 30px);
   overflow-y: auto;
 }
 .h4_title {

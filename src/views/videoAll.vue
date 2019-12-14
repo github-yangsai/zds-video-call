@@ -52,7 +52,7 @@ import picturesShow from "@/components/picturesShow";
 import chatBody from "@/components/chatBody";
 import imageModal from "@/components/imageModal";
 import caseDetail from "@/components/caseDetail";
-import lossOrder from "@/components/lossOrder";
+import lossOrder from "@/components/lossOrder/main";
 import userInfo from "@/components/userInfo";
 export default {
   name: "videoAll",
@@ -97,7 +97,7 @@ export default {
     };
   },
   mounted() {
-    this.queryBasicInfo();
+    this.queryAllInfo();
   },
   computed: {},
   methods: {
@@ -108,7 +108,7 @@ export default {
     closeImageModal() {
       this.imageModalFlag = false;
     },
-    queryBasicInfo() {
+    queryAllInfo() {
       //查询基本信息
       this.$api.caseInfo.queryCaseDetail(this.id).then(res => {
         this.basicInfo = res.data;
@@ -154,11 +154,32 @@ export default {
       //查询协勘评价信息
       this.$api.caseInfo.queryFeedback(this.id).then(res => {
         let data = res.data;
-        this.$store.commit("setFeedback", { id: this.id, evaluationInfo: data });
+        this.$store.commit("setFeedback", {
+          id: this.id,
+          evaluationInfo: data
+        });
       });
+
+      //查询定损单详情
+      this.$api.caseInfo.getEvidenceBillAsync(this.id).then(res => {
+        let data = res.data;
+        this.$store.commit("setEvidenceBill", {
+          id: this.id,
+          evidenceBill: data
+        });
+      });
+
+      //查询查勘单详情
+      // this.$api.caseInfo.getEvidenceBillAsync(this.id).then(res => {
+      //   let data = res.data;
+      //   this.$store.commit("setEvidenceBill", {
+      //     id: this.id,
+      //     evidenceBill: data
+      //   });
+      // });
     },
     queryCaseDetail() {
-      this.tabType = 1;
+      this.tabType = 1; 
     },
     queryOrder() {
       this.tabType = 2;
@@ -166,7 +187,7 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style>
 .video_all {
   position: relative;
   border-bottom: 1px #d2d2d2 solid;
@@ -207,6 +228,8 @@ export default {
   overflow: hidden;
 }
 .info_content {
-  /* height: calc(50vh - 52px); */
+  height: calc(50vh - 50px);
 }
+</style>
+<style>
 </style>

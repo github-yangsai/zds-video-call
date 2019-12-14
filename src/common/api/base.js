@@ -15,11 +15,13 @@ const base = {
     sessionConnected: `/api/session-connected`,
     sessionUnConnected: `/api/session-unconnected`,
     seatIn: `/api/seat-in`,
+    seatOut: `/api/seat-out`,
     feedback: `/api/coadjust/feedback`,
     guidePic: `/api/guidepics/0`,
     finished: `/api/case/finished`,
     feedbackExist: `/api/coadjust/feedback/exist`,
-    submitFeedback: `/api/coadjust/feedback`
+    submitFeedback: `/api/coadjust/feedback`,
+    evidenceBill: `/api/loss-ass`
 }
 
 export default base;

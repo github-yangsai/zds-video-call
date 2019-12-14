@@ -54,8 +54,13 @@ export default {
   },
   mounted() {
     this.checkBrowser();
+    this.seatOutAsync();
   },
   methods: {
+    seatOutAsync() {
+      sessionStorage.setItem("isSeatIn", "false");
+      this.$api.common.seatOut().then(res => {});
+    },
     checkBrowser() {
       // chrome 70以上
       const userAgent = window.navigator.userAgent;

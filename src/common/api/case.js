@@ -25,6 +25,9 @@ const caseInfo = {
     submitFeedback(params) {
         return axios.post(`${base.submitFeedback}`, params);
     },
+    getEvidenceBillAsync(caseId) {
+        return axios.get(`${base.evidenceBill}/${caseId}`);
+    }
 
 }
 

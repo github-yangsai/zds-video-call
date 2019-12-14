@@ -753,7 +753,7 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style>
 .video_container {
   height: calc(50vh - 50px);
   background: #000;
@@ -837,6 +837,10 @@ export default {
 }
 .mic_btn i {
   font-size: 22px;
+}
+.mic_btn:hover,.photo_btn:hover{
+  color:#fff;
+  background: #2481d6;
 }
 .mic_btn.mute {
   background: #e50000;

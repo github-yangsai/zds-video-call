@@ -107,6 +107,17 @@ const videoBody = {
             state.data.push({});
             state.data.pop();
         },
+        setEvidenceBill(state, data) {
+            let evidenceBill = Object.assign({}, data.evidenceBill);
+            for (let i = 0; i < state.data.length; i++) {
+                if (data.id == state.data[i].id) {
+                    state.data[i].evidenceBill = evidenceBill;
+                    break;
+                }
+            }
+            state.data.push({});
+            state.data.pop();
+        },
         setCurrentPictureCategory(state, data) {
             let currentPictureCategory = Object.assign({}, data.currentPictureCategory);
             for (let i = 0; i < state.data.length; i++) {

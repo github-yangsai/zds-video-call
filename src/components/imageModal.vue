@@ -79,13 +79,13 @@ export default {
   top: 0;
   background: #000;
   opacity: 0.5;
-  z-index: 1;
+  z-index:2;
 }
 .image_box {
   width: 520px;
   height: 260px;
   position: absolute;
-  z-index: 2;
+  z-index:6;
   left: 50%;
   margin-left: -260px;
   top: 50%;

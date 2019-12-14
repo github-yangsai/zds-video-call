@@ -565,7 +565,7 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style>
 .pictures_type {
   width: 50%;
   float: left;

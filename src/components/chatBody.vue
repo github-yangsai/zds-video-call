@@ -104,7 +104,6 @@ export default {
     // 向客户推送引导图
     sendGuidePic(picture) {
       const customerId = this.currentChat.customerId;
-      debugger
       this.$common.send(
         "SendMessageToUserById",
         customerId,
@@ -167,7 +166,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .chat_box {
   border-right: 1px #d2d2d2 solid;
 }

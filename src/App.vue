@@ -65,4 +65,6 @@ li {
 .ocr_modal .ivu-form-item{
   margin-bottom: 20px;
 }
+
+
 </style>

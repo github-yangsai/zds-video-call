@@ -61,6 +61,20 @@ Vue.filter('date', function(value) {
       second < 10 ? "0" + second : second
     }`;
 })
+Vue.filter('dateZH', function(value) {
+    if (!value) return ''
+    let date = new Date(value);
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    let hour = date.getHours();
+    let min = date.getMinutes();
+    let second = date.getSeconds();
+    return `${year}年${month < 10 ? "0" + month : month}月${
+    day < 10 ? "0" + day : day
+  }日
+  }`;
+})
 
 /* eslint-disable no-new */
 new Vue({

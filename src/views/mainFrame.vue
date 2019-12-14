@@ -5,7 +5,6 @@
       class="top_container layout_box single"
       :class="{'high':currentVideo==id1}"
       v-if="videoFlag1"
-      data-single
     >
       <video-all :id="id1"></video-all>
     </div>
@@ -128,7 +127,11 @@ export default {
     },
     seatInAsync() {
       sessionStorage.setItem("isSeatIn", "true");
-      return this.$api.common.seatIn().then(res => {});
+      this.$api.common.seatIn().then(res => {});
+    },
+    seatOutAsync() {
+      sessionStorage.setItem("isSeatIn", "false");
+      this.$api.common.seatOut().then(res => {});
     },
     showRing(chat) {
       const stringChat = chat ? JSON.stringify(chat) : "";
@@ -212,5 +215,49 @@ export default {
 }
 .layout_box.high {
   z-index: 2;
+}
+</style>
+<style>
+.single .top_container {
+    height: 100%;
+}
+
+.single .video_container {
+    height: calc(100vh - 50px);
+}
+
+.single .video_body {
+    height: calc(100vh - 120px);
+}
+
+.single .video-view {
+    height: calc(100vh - 120px);
+}
+
+.single .pictures_type {
+    height: calc(100vh - 50px);
+}
+
+.single .pictures_list {
+    height: calc(100vh - 50px);
+}
+
+.single .chat_history {
+    height: calc(100vh - 80px);
+}
+
+.single .case_detail {
+    height: calc(100vh - 50px);
+}
+
+
+.single .r_main {
+    height: calc(100vh - 50px);
+}
+.single .info_content{
+  height: calc(100vh - 50px);
+}
+.single .loss_order_content{
+  height:calc(100vh - 50px);
 }
 </style>

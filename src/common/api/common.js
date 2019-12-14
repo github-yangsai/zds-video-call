@@ -17,6 +17,9 @@ const common = {
     },
     seatIn() {
         return axios.get(`${base.seatIn}`);
+    },
+    seatOut() {
+        return axios.get(`${base.seatOut}`);
     }
 
 }
